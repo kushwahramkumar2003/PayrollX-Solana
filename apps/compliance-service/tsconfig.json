@@ -11,7 +11,7 @@
     "outDir": "./dist",
     "baseUrl": "../../",
     "moduleResolution": "node",
-    "module": "CommonJS"
+    "module": "CommonJS",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,
@@ -21,10 +21,10 @@
     "noFallthroughCasesInSwitch": false,
     "paths": {
       "@payrollx/database": ["../../packages/database/src"],
-      "@payrollx/contracts": ["../../packages/contracts/src"]
+      "@payrollx/contracts": ["../../packages/contracts/src"],
+      "@payrollx/common": ["../../packages/common/src"]
     }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }
-

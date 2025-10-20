@@ -38,6 +38,7 @@
   ],
   "resolutions": {
     "@payrollx/database": "*",
-    "@payrollx/contracts": "*"
+    "@payrollx/contracts": "*",
+    "@payrollx/common": "*"
   }
 }

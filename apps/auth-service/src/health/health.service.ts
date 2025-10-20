@@ -18,7 +18,7 @@ export class HealthService {
       return {
         [key]: {
           status: "down" as HealthIndicatorStatus,
-          message: error.message,
+          message: error instanceof Error ? error.message : String(error),
         },
       };
     }

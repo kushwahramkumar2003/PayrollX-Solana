@@ -1,13 +1,16 @@
 {
-  "extends": "@payrollx/typescript-config/nestjs.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "NestJS",
+  "extends": "./base.json",
   "compilerOptions": {
-    "module": "commonjs",
+    "target": "ES2021",
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "ES2020",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "../../",
@@ -16,14 +19,15 @@
     "strictNullChecks": false,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@payrollx/contracts": ["../../packages/contracts/src"],
       "@payrollx/database": ["../../packages/database/src"],
-      "@payrollx/common": ["../../packages/common/src"]
+      "@payrollx/contracts": ["../../packages/contracts/src"],
+      "@payrollx/common": ["../../packages/common/src"],
+      "@payrollx/ui": ["../../packages/ui/src"]
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
+  "exclude": ["node_modules", "dist", "test", "**/*spec.ts", "**/*test.ts"]
 }

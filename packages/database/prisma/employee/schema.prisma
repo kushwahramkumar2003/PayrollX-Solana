@@ -1,31 +1,14 @@
-// This is your Prisma schema file for the Organization service
+// This is your Prisma schema file for the Employee service
 // Learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../../../node_modules/.prisma/organization"
+  output   = "../../../../node_modules/.prisma/employee"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-}
-
-model Organization {
-  id                  String    @id @default(uuid())
-  name                String    @unique
-  config              Json?
-  authorizedSigners   String[]
-  onboardingCompleted Boolean   @default(false)
-  createdBy           String
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  deletedAt           DateTime?
-
-  // Relations
-  employees           Employee[]
-
-  @@map("organizations")
 }
 
 model Employee {
@@ -45,6 +28,23 @@ model Employee {
   organization   Organization @relation(fields: [organizationId], references: [id])
 
   @@map("employees")
+}
+
+model Organization {
+  id                  String    @id @default(uuid())
+  name                String    @unique
+  config              Json?
+  authorizedSigners   String[]
+  onboardingCompleted Boolean   @default(false)
+  createdBy           String
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
+
+  // Relations
+  employees           Employee[]
+
+  @@map("organizations")
 }
 
 enum KycStatus {

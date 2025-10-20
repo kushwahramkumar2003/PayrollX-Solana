@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "@payrollx/typescript-config/nestjs.json",
   "compilerOptions": {
     "declaration": true,
     "removeComments": true,
@@ -18,6 +18,13 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "moduleResolution": "node",
-    "module": "CommonJS"
-  }
+    "module": "CommonJS",
+    "paths": {
+      "@payrollx/database": ["../../packages/database/src"],
+      "@payrollx/contracts": ["../../packages/contracts/src"],
+      "@payrollx/common": ["../../packages/common/src"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }

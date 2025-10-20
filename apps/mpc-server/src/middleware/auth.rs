@@ -7,6 +7,7 @@ use std::future::{ready, Ready};
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
     sub: String,
@@ -33,6 +34,7 @@ where
     }
 }
 
+#[allow(dead_code)]
 pub struct AuthMiddlewareService<S> {
     service: S,
 }
@@ -45,14 +47,16 @@ where
 {
     type Response = ServiceResponse<B>;
     type Error = Error;
-    type Future = Pin<Box<dyn std::future::Future<Output = Result<Self::Response, Self::Error>>>>;
+    // Return the concrete service future type instead of boxing an async block.
+    type Future = S::Future;
 
     fn poll_ready(&self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         self.service.poll_ready(cx)
     }
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        Box::pin(self.service.call(req))
+        // direct forwarding of inner service future (no redundant async block)
+        self.service.call(req)
     }
 }
 

@@ -32,4 +32,3 @@ export {
   TableCell,
   TableCaption,
 } from "./table";
-

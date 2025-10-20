@@ -139,4 +139,3 @@ export async function getTokenBalance(
     return 0;
   }
 }
-

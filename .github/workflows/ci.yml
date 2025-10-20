@@ -20,6 +20,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
       - name: Check for package-lock.json
         run: |
@@ -31,7 +32,22 @@ jobs:
           echo "✅ package-lock.json found"
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          # Improve npm reliability in CI
+          npm set progress=false
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
+          # Try a few times to work around transient network/TLS errors
+          for i in 1 2 3; do
+            npm ci --prefer-offline --no-audit --no-fund && break
+            echo "npm ci failed (attempt $i), retrying in 10s..."
+            sleep 10
+            if [ "$i" -eq 3 ]; then
+              echo "npm ci failed after 3 attempts"
+              exit 1
+            fi
+          done
 
       - name: Build packages
         run: |
@@ -57,6 +73,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
       - name: Check for package-lock.json
         run: |
@@ -68,7 +85,22 @@ jobs:
           echo "✅ package-lock.json found"
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          # Improve npm reliability in CI
+          npm set progress=false
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
+          # Try a few times to work around transient network/TLS errors
+          for i in 1 2 3; do
+            npm ci --prefer-offline --no-audit --no-fund && break
+            echo "npm ci failed (attempt $i), retrying in 10s..."
+            sleep 10
+            if [ "$i" -eq 3 ]; then
+              echo "npm ci failed after 3 attempts"
+              exit 1
+            fi
+          done
 
       - name: Build workspace packages first
         run: npm run build:packages
@@ -110,6 +142,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
       - name: Check for package-lock.json
         run: |
@@ -121,7 +154,22 @@ jobs:
           echo "✅ package-lock.json found"
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          # Improve npm reliability in CI
+          npm set progress=false
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
+          # Try a few times to work around transient network/TLS errors
+          for i in 1 2 3; do
+            npm ci --prefer-offline --no-audit --no-fund && break
+            echo "npm ci failed (attempt $i), retrying in 10s..."
+            sleep 10
+            if [ "$i" -eq 3 ]; then
+              echo "npm ci failed after 3 attempts"
+              exit 1
+            fi
+          done
 
       - name: Build workspace packages first
         run: npm run build:packages

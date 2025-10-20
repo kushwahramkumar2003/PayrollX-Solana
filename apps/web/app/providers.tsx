@@ -16,12 +16,7 @@ export function Providers({ children }: ProvidersProps) {
       disableTransitionOnChange
     >
       {children}
-      <Toaster 
-        position="top-right"
-        expand={false}
-        richColors
-        closeButton
-      />
+      <Toaster position="top-right" expand={false} richColors closeButton />
     </ThemeProvider>
   );
 }

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import * as twilio from "twilio";
+import twilio from "twilio";
 
 @Injectable()
 export class SmsService {
@@ -30,4 +30,3 @@ export class SmsService {
     }
   }
 }
-

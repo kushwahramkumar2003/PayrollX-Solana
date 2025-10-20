@@ -1,6 +1,6 @@
 import { WinstonModuleOptions } from "nest-winston";
 import * as winston from "winston";
-import * as DailyRotateFile from "winston-daily-rotate-file";
+import DailyRotateFile from "winston-daily-rotate-file";
 
 export const winstonConfig: WinstonModuleOptions = {
   level: process.env.LOG_LEVEL || "info",

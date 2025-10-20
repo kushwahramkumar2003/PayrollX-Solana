@@ -1,0 +1,409 @@
+version: "3.8"
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16
+    container_name: payrollx-postgres
+    environment:
+      POSTGRES_DB: payrollx
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_MULTIPLE_DATABASES: payrollx_auth,payrollx_org,payrollx_employee,payrollx_wallet,payrollx_payroll,payrollx_transaction,payrollx_notification,payrollx_compliance
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - payrollx-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d payrollx"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: payrollx-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - payrollx-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: payrollx-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - payrollx-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Solana Test Validator
+  solana:
+    image: solanalabs/solana:v1.18
+    container_name: payrollx-solana
+    command: solana-test-validator --reset --quiet
+    ports:
+      - "8899:8899"
+      - "8900:8900"
+    volumes:
+      - solana_data:/root/.local/share/solana
+    networks:
+      - payrollx-network
+    healthcheck:
+      test: ["CMD", "solana", "cluster-version"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # MPC Server
+  mpc-server:
+    build:
+      context: ./apps/mpc-server
+      dockerfile: Dockerfile
+    container_name: payrollx-mpc-server
+    ports:
+      - "8080:8080"
+    environment:
+      - MPC_JWT_SECRET=your-mpc-secret-key
+      - RUST_LOG=info
+    networks:
+      - payrollx-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Auth Service
+  auth-service:
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
+    container_name: payrollx-auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/payrollx_auth
+      - JWT_SECRET=your-jwt-secret
+      - JWT_REFRESH_SECRET=your-refresh-secret
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - payrollx-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Organization Service
+  org-service:
+    build:
+      context: .
+      dockerfile: apps/org-service/Dockerfile
+    container_name: payrollx-org-service
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/payrollx_org
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - payrollx-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Employee Service
+  employee-service:
+    build:
+      context: .
+      dockerfile: apps/employee-service/Dockerfile
+    container_name: payrollx-employee-service
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/payrollx_employee
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - payrollx-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Wallet Service
+  wallet-service:
+    build:
+      context: .
+      dockerfile: apps/wallet-service/Dockerfile
+    container_name: payrollx-wallet-service
+    ports:
+      - "3005:3005"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/payrollx_wallet
+      - MPC_SERVER_URL=http://mpc-server:8080
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - payrollx-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mpc-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Payroll Service
+  payroll-service:
+    build:
+      context: .
+      dockerfile: apps/payroll-service/Dockerfile
+    container_name: payrollx-payroll-service
+    ports:
+      - "3006:3006"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/payrollx_payroll
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - payrollx-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Transaction Service
+  transaction-service:
+    build:
+      context: .
+      dockerfile: apps/transaction-service/Dockerfile
+    container_name: payrollx-transaction-service
+    ports:
+      - "3007:3007"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/payrollx_transaction
+      - SOLANA_RPC_URL=http://solana:8899
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - payrollx-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      solana:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Notification Service
+  notification-service:
+    build:
+      context: .
+      dockerfile: apps/notification-service/Dockerfile
+    container_name: payrollx-notification-service
+    ports:
+      - "3008:3008"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/payrollx_notification
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - payrollx-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3008/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Compliance Service
+  compliance-service:
+    build:
+      context: .
+      dockerfile: apps/compliance-service/Dockerfile
+    container_name: payrollx-compliance-service
+    ports:
+      - "3009:3009"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/payrollx_compliance
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - payrollx-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3009/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: .
+      dockerfile: apps/api-gateway/Dockerfile
+    container_name: payrollx-api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - ORG_SERVICE_URL=http://org-service:3002
+      - EMPLOYEE_SERVICE_URL=http://employee-service:3003
+      - WALLET_SERVICE_URL=http://wallet-service:3005
+      - PAYROLL_SERVICE_URL=http://payroll-service:3006
+      - TRANSACTION_SERVICE_URL=http://transaction-service:3007
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3008
+      - COMPLIANCE_SERVICE_URL=http://compliance-service:3009
+      - MPC_SERVER_URL=http://mpc-server:8080
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - payrollx-network
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      org-service:
+        condition: service_healthy
+      employee-service:
+        condition: service_healthy
+      wallet-service:
+        condition: service_healthy
+      payroll-service:
+        condition: service_healthy
+      transaction-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+      compliance-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Web Frontend
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: payrollx-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
+    networks:
+      - payrollx-network
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  redis_data:
+  solana_data:
+
+networks:
+  payrollx-network:
+    driver: bridge

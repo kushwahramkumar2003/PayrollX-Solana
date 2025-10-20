@@ -1,0 +1,39 @@
+{
+  "name": "@payrollx/database",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:generate:auth": "prisma generate --schema=prisma/auth.prisma",
+    "prisma:generate:org": "prisma generate --schema=prisma/organization.prisma",
+    "prisma:generate:employee": "prisma generate --schema=prisma/employee.prisma",
+    "prisma:generate:wallet": "prisma generate --schema=prisma/wallet.prisma",
+    "prisma:generate:payroll": "prisma generate --schema=prisma/payroll.prisma",
+    "prisma:generate:transaction": "prisma generate --schema=prisma/transaction.prisma",
+    "prisma:generate:notification": "prisma generate --schema=prisma/notification.prisma",
+    "prisma:generate:compliance": "prisma generate --schema=prisma/compliance.prisma",
+    "prisma:generate:all": "npm run prisma:generate:auth && npm run prisma:generate:org && npm run prisma:generate:employee && npm run prisma:generate:wallet && npm run prisma:generate:payroll && npm run prisma:generate:transaction && npm run prisma:generate:notification && npm run prisma:generate:compliance"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.0.0",
+    "prisma": "^5.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "ts-node": "^10.0.0",
+    "@types/node": "^20.0.0"
+  }
+}

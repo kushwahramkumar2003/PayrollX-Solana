@@ -1,0 +1,59 @@
+// This is your Prisma schema file for the Compliance service
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../../node_modules/.prisma/compliance"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ComplianceReport {
+  id          String             @id @default(uuid())
+  name        String
+  format      ReportFormat       @default(PDF)
+  status      ReportStatus       @default(GENERATING)
+  startDate   DateTime
+  endDate     DateTime
+  filters     Json?
+  filePath    String?
+  error       String?
+  createdBy   String
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  completedAt DateTime?
+
+  @@map("compliance_reports")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String
+  action     String
+  entityType String
+  entityId   String
+  details    Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+enum ReportFormat {
+  PDF
+  CSV
+  EXCEL
+  JSON
+}
+
+enum ReportStatus {
+  GENERATING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+

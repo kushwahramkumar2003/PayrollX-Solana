@@ -1,0 +1,353 @@
+version: "3.8"
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16
+    container_name: payrollx-postgres
+    environment:
+      POSTGRES_DB: payrollx
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_MULTIPLE_DATABASES: payrollx_auth,payrollx_org,payrollx_employee,payrollx_wallet,payrollx_payroll,payrollx_transaction,payrollx_notification,payrollx_compliance
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - payrollx-network
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: payrollx-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - payrollx-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: payrollx-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - payrollx-network
+
+  # Solana Test Validator
+  solana:
+    image: solanalabs/solana:latest
+    container_name: payrollx-solana
+    command: solana-test-validator --reset --quiet
+    ports:
+      - "8899:8899"
+      - "8900:8900"
+    volumes:
+      - solana_data:/root/.local/share/solana
+    networks:
+      - payrollx-network
+
+  # MPC Server
+  mpc-server:
+    build:
+      context: ./apps/mpc-server
+      dockerfile: Dockerfile
+    container_name: payrollx-mpc-server
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8080
+      - JWT_SECRET=your-super-secret-jwt-key-for-mpc-server
+      - SHARE_RETENTION_HOURS=24
+      - LOG_LEVEL=info
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - payrollx-network
+
+  # Auth Service
+  auth-service:
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
+    container_name: payrollx-auth-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/payrollx_auth
+      - JWT_SECRET=your-super-secret-jwt-key
+      - JWT_REFRESH_SECRET=your-super-secret-refresh-key
+      - JWT_EXPIRES_IN=1h
+      - JWT_REFRESH_EXPIRES_IN=7d
+      - LOG_LEVEL=info
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+    networks:
+      - payrollx-network
+
+  # Organization Service
+  org-service:
+    build:
+      context: .
+      dockerfile: apps/org-service/Dockerfile
+    container_name: payrollx-org-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/payrollx_org
+      - JWT_SECRET=your-super-secret-jwt-key
+      - SOLANA_RPC_URL=http://solana:8899
+      - SOLANA_CLUSTER=devnet
+      - LOG_LEVEL=info
+    ports:
+      - "3002:3002"
+    depends_on:
+      - postgres
+      - solana
+    networks:
+      - payrollx-network
+
+  # Employee Service
+  employee-service:
+    build:
+      context: .
+      dockerfile: apps/employee-service/Dockerfile
+    container_name: payrollx-employee-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/payrollx_employee
+      - JWT_SECRET=your-super-secret-jwt-key
+      - LOG_LEVEL=info
+    ports:
+      - "3003:3003"
+    depends_on:
+      - postgres
+    networks:
+      - payrollx-network
+
+  # Wallet Service
+  wallet-service:
+    build:
+      context: .
+      dockerfile: apps/wallet-service/Dockerfile
+    container_name: payrollx-wallet-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3005
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/payrollx_wallet
+      - JWT_SECRET=your-super-secret-jwt-key
+      - MPC_SERVER_URL=http://mpc-server:8080
+      - MPC_JWT_SECRET=your-super-secret-jwt-key-for-mpc-server
+      - SOLANA_RPC_URL=http://solana:8899
+      - SOLANA_CLUSTER=devnet
+      - LOG_LEVEL=info
+    ports:
+      - "3005:3005"
+    depends_on:
+      - postgres
+      - mpc-server
+      - solana
+    networks:
+      - payrollx-network
+
+  # Payroll Service
+  payroll-service:
+    build:
+      context: .
+      dockerfile: apps/payroll-service/Dockerfile
+    container_name: payrollx-payroll-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3006
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/payrollx_payroll
+      - JWT_SECRET=your-super-secret-jwt-key
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - TRANSACTION_SERVICE_URL=http://transaction-service:3007
+      - LOG_LEVEL=info
+    ports:
+      - "3006:3006"
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - payrollx-network
+
+  # Transaction Service
+  transaction-service:
+    build:
+      context: .
+      dockerfile: apps/transaction-service/Dockerfile
+    container_name: payrollx-transaction-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3007
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/payrollx_transaction
+      - JWT_SECRET=your-super-secret-jwt-key
+      - SOLANA_RPC_URL=http://solana:8899
+      - SOLANA_CLUSTER=devnet
+      - WALLET_SERVICE_URL=http://wallet-service:3005
+      - LOG_LEVEL=info
+    ports:
+      - "3007:3007"
+    depends_on:
+      - postgres
+      - solana
+      - wallet-service
+    networks:
+      - payrollx-network
+
+  # Notification Service
+  notification-service:
+    build:
+      context: .
+      dockerfile: apps/notification-service/Dockerfile
+    container_name: payrollx-notification-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3008
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/payrollx_notification
+      - JWT_SECRET=your-super-secret-jwt-key
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USER=your-email@gmail.com
+      - SMTP_PASS=your-app-password
+      - TWILIO_ACCOUNT_SID=your-twilio-account-sid
+      - TWILIO_AUTH_TOKEN=your-twilio-auth-token
+      - TWILIO_PHONE_NUMBER=your-twilio-phone-number
+      - LOG_LEVEL=info
+    ports:
+      - "3008:3008"
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - payrollx-network
+
+  # Compliance Service
+  compliance-service:
+    build:
+      context: .
+      dockerfile: apps/compliance-service/Dockerfile
+    container_name: payrollx-compliance-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3009
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/payrollx_compliance
+      - JWT_SECRET=your-super-secret-jwt-key
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - LOG_LEVEL=info
+    ports:
+      - "3009:3009"
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - payrollx-network
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: .
+      dockerfile: apps/api-gateway/Dockerfile
+    container_name: payrollx-api-gateway
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - ORG_SERVICE_URL=http://org-service:3002
+      - EMPLOYEE_SERVICE_URL=http://employee-service:3003
+      - WALLET_SERVICE_URL=http://wallet-service:3005
+      - PAYROLL_SERVICE_URL=http://payroll-service:3006
+      - TRANSACTION_SERVICE_URL=http://transaction-service:3007
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3008
+      - COMPLIANCE_SERVICE_URL=http://compliance-service:3009
+      - LOG_LEVEL=info
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+      - org-service
+      - employee-service
+      - wallet-service
+      - payroll-service
+      - transaction-service
+      - notification-service
+      - compliance-service
+    networks:
+      - payrollx-network
+
+  # Next.js Frontend
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: payrollx-web
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
+      - NEXT_PUBLIC_SOLANA_RPC_URL=http://localhost:8899
+      - NEXT_PUBLIC_CLUSTER=devnet
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api-gateway
+    networks:
+      - payrollx-network
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: payrollx-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--storage.tsdb.retention.time=200h"
+      - "--web.enable-lifecycle"
+    networks:
+      - payrollx-network
+
+  # Grafana Dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: payrollx-grafana
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - payrollx-network
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  redis_data:
+  solana_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  payrollx-network:
+    driver: bridge

@@ -1,0 +1,92 @@
+// This is your Prisma schema file for the Transaction service
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../../node_modules/.prisma/transaction"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Transaction {
+  id           String            @id @default(uuid())
+  payrollRunId String
+  employeeId   String
+  type         TransactionType   @default(PAYROLL)
+  amount       Decimal
+  tokenAddress String?
+  signature    String?
+  status       TransactionStatus @default(PENDING)
+  error        String?
+  notes        String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  completedAt  DateTime?
+
+  @@map("transactions")
+}
+
+model PayrollRun {
+  id             String        @id @default(uuid())
+  organizationId String
+  status         PayrollStatus @default(DRAFT)
+  scheduledDate  DateTime
+  totalAmount    Decimal
+  currency       String        @default("SOL")
+  createdBy      String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  deletedAt      DateTime?
+
+  @@map("payroll_runs")
+}
+
+model Employee {
+  id             String   @id @default(uuid())
+  organizationId String
+  userId         String
+  walletAddress  String?
+  kycStatus      KycStatus @default(PENDING)
+  kycDocuments   Json?
+  salary         Decimal?
+  paymentToken   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  deletedAt      DateTime?
+
+  @@map("employees")
+}
+
+enum TransactionType {
+  PAYROLL
+  BONUS
+  REFUND
+  ADJUSTMENT
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum PayrollStatus {
+  DRAFT
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum KycStatus {
+  PENDING
+  VERIFIED
+  APPROVED
+  REJECTED
+}
+

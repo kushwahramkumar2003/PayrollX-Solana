@@ -1,0 +1,10 @@
+# Solana program ignores
+target/
+.anchor/
+test-ledger/
+Cargo.lock
+*.log
+node_modules/
+dist/
+build/
+

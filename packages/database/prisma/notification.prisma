@@ -1,0 +1,46 @@
+// This is your Prisma schema file for the Notification service
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../../node_modules/.prisma/notification"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Notification {
+  id         String             @id @default(uuid())
+  userId     String
+  type       NotificationType   @default(EMAIL)
+  recipient  String
+  subject    String
+  content    String
+  templateId String?
+  metadata   Json?
+  status     NotificationStatus @default(PENDING)
+  error      String?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  sentAt     DateTime?
+
+  @@map("notifications")
+}
+
+enum NotificationType {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  DELIVERED
+  READ
+}
+

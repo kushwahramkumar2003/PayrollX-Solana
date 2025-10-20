@@ -1,0 +1,11 @@
+# Service-specific ignores
+logs/
+dist/
+build/
+*.log
+.env
+node_modules/
+coverage/
+.cache/
+.turbo/
+

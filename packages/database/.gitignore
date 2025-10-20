@@ -1,0 +1,9 @@
+# Package-specific ignores
+dist/
+build/
+*.log
+node_modules/
+coverage/
+.cache/
+.turbo/
+

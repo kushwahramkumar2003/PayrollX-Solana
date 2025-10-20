@@ -1,0 +1,20 @@
+{
+  "name": "@payrollx/payroll-solana",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "anchor build",
+    "test": "anchor test",
+    "deploy": "anchor deploy",
+    "clean": "anchor clean",
+    "lint": "cargo clippy --all-targets --all-features -- -D warnings",
+    "format": "cargo fmt --all"
+  },
+  "devDependencies": {
+    "@coral-xyz/anchor": "^0.29.0",
+    "@solana/web3.js": "^1.87.0",
+    "@solana/spl-token": "^0.3.0",
+    "mocha": "^10.2.0",
+    "chai": "^4.3.0"
+  }
+}

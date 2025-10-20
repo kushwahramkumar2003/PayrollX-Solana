@@ -1,0 +1,14 @@
+# Rust build artifacts
+target/
+Cargo.lock
+*.rs.bk
+
+# Rust debug files
+debug/
+
+# Rust incremental compilation
+**/target/debug/incremental/
+**/target/release/incremental/
+
+# Rust dependency info
+Cargo.lock

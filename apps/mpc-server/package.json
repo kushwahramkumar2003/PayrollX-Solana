@@ -1,0 +1,12 @@
+{
+  "name": "@payrollx/mpc-server",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cargo build --release",
+    "dev": "cargo run",
+    "start": "cargo run --release",
+    "test": "cargo test",
+    "clean": "cargo clean"
+  }
+}

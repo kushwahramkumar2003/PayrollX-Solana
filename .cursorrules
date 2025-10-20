@@ -1,0 +1,325 @@
+# PayrollX-Solana Cursor Rules
+
+# Enterprise-grade blockchain payroll system development guidelines
+
+## Project Context
+
+project_name: PayrollX-Solana
+description: Enterprise blockchain-based payroll disbursement platform on Solana with MPC wallets
+tech_stack:
+
+- Turborepo (monorepo)
+- Bun (package manager)
+- Next.js 14+ (frontend)
+- NestJS (backend microservices)
+- Anchor framework (Solana programs)
+- Rust (MPC server)
+- PostgreSQL + Prisma (databases)
+- RabbitMQ (message queue)
+- TypeScript (strict mode)
+
+## Code Style and Standards
+
+### TypeScript/JavaScript
+
+- Always use TypeScript with strict mode enabled
+- Prefer interfaces over types for object shapes
+- Use const assertions for literal types
+- Implement proper null/undefined handling (no non-null assertions without justification)
+- Use async/await over promises chains
+- Prefer functional programming patterns (immutability, pure functions)
+- Use descriptive variable names (no single letters except for loops)
+
+### NestJS Services
+
+- Follow modular architecture: one module per domain
+- Use dependency injection for all services
+- Implement DTOs with class-validator decorators
+- Create custom decorators for repeated logic
+- Use interceptors for logging and transformation
+- Implement proper exception filters
+- Always define return types for controller methods
+- Use @Injectable() decorator for all services
+- Organize files: module → controller → service → repository
+
+### Prisma/Database
+
+- Use UUIDs for all primary keys (@default(uuid()))
+- Include createdAt and updatedAt timestamps
+- Implement soft deletes with deletedAt field
+- Use enums for status fields
+- Index foreign keys and frequently queried fields
+- Use transactions for multi-step operations
+- Validate data at both application and database level
+- Name tables in singular form
+- Use cascading deletes thoughtfully
+
+### Next.js Frontend
+
+- Use App Router (not Pages Router)
+- Implement Server Components by default, Client Components only when necessary
+- Use React Server Actions for mutations
+- Implement proper loading and error states
+- Use Suspense boundaries for async components
+- Prefer CSS modules or Tailwind over styled-components
+- Implement proper SEO metadata
+- Use next/image for all images
+- Implement proper error boundaries
+
+### Anchor/Solana Programs
+
+- Use PDAs for all program-owned accounts
+- Implement proper access control on all instructions
+- Use checked arithmetic (checked_add, checked_sub, checked_mul)
+- Validate all account constraints in #[derive(Accounts)]
+- Emit events for all state changes
+- Write comprehensive comments for complex logic
+- Use discriminators for account types
+- Implement proper error handling with custom errors
+- Test with both SOL and SPL token transfers
+
+### Rust (MPC Server)
+
+- Use Result<T, E> for fallible operations
+- Implement proper error types with thiserror
+- Use tokio for async runtime
+- Implement structured logging with log crate
+- Use serde for serialization
+- Implement proper CORS and security headers
+- Use environment variables for configuration
+- Write unit tests for all core functions
+- Use cargo clippy and cargo fmt
+
+## Architecture Patterns
+
+### Microservices Communication
+
+- Use RabbitMQ for async event-driven communication
+- Use gRPC for synchronous service-to-service calls
+- Implement correlation IDs for request tracing
+- Use circuit breakers for external service calls
+- Implement retry logic with exponential backoff
+- Define clear event schemas in packages/contracts
+- Version all APIs and events
+
+### Security
+
+- Never commit secrets or private keys
+- Use environment variables for all configuration
+- Implement rate limiting on all public endpoints
+- Validate all user inputs with class-validator
+- Sanitize all database queries (Prisma handles this)
+- Use JWT with short expiration (15min) and refresh tokens
+- Implement RBAC with guards
+- Hash all passwords with bcrypt (minimum 12 rounds)
+- Use HTTPS only in production
+- Implement CORS properly
+- Log all authentication attempts and failures
+
+### Error Handling
+
+- Use custom exception classes that extend HttpException
+- Return consistent error response format:
+  {
+  "statusCode": number,
+  "message": string,
+  "error": string,
+  "timestamp": string,
+  "path": string
+  }
+- Never expose internal error details to clients
+- Log all errors with correlation IDs
+- Implement proper error boundaries in React
+- Use Sentry or similar for error tracking in production
+
+### Testing
+
+- Write unit tests for all services and utilities
+- Use Jest for JavaScript/TypeScript testing
+- Use Anchor's testing framework for Solana programs
+- Implement integration tests for inter-service communication
+- Use Supertest for API endpoint testing
+- Mock external services in tests
+- Aim for >80% code coverage
+- Use test data builders for complex objects
+
+### Performance
+
+- Implement database query optimization with Prisma
+- Use Redis for caching frequently accessed data
+- Implement pagination for all list endpoints
+- Use database indexes strategically
+- Implement lazy loading in frontend
+- Optimize images with next/image
+- Use React.memo for expensive component renders
+- Implement proper loading states to avoid layout shift
+
+### Observability
+
+- Log all important events with structured logging
+- Include correlation IDs in all logs
+- Implement health check endpoints (/health)
+- Expose Prometheus metrics from all services
+- Use Winston for logging in NestJS
+- Log levels: error, warn, info, debug
+- Include user IDs and organization IDs in logs (not PII)
+- Monitor Solana transaction success rates
+
+## File Organization
+
+### Naming Conventions
+
+- Use kebab-case for file names (user-service.ts)
+- Use PascalCase for classes and interfaces (UserService)
+- Use camelCase for variables and functions (getUserById)
+- Use UPPER_SNAKE_CASE for constants (API_BASE_URL)
+- Use .service.ts, .controller.ts, .module.ts suffixes for NestJS
+- Use .dto.ts for Data Transfer Objects
+- Use .entity.ts for Prisma models
+- Use .interface.ts for TypeScript interfaces
+- Use .spec.ts for test files
+
+### Import Organization
+
+- Group imports: external packages → internal packages → relative imports
+- Sort imports alphabetically within groups
+- Use absolute imports with tsconfig paths where configured
+- Avoid circular dependencies
+
+## Git Workflow
+
+- Use conventional commits (feat:, fix:, chore:, docs:, etc.)
+- Branch naming: feature/description, fix/description, chore/description
+- Keep commits atomic and focused
+- Write descriptive commit messages
+- Reference issue numbers in commits when applicable
+- Require PR reviews before merging
+- Squash commits on merge to main
+
+## Environment Configuration
+
+- Never commit .env files
+- Provide .env.example templates
+- Use different .env files per environment (.env.development, .env.production)
+- Validate environment variables on application startup
+- Document all environment variables in README
+
+## Documentation
+
+- Write JSDoc comments for all public APIs
+- Document complex algorithms and business logic
+- Keep README files updated in each package
+- Document API endpoints with Swagger/OpenAPI
+- Include setup instructions for new developers
+- Document deployment procedures
+- Maintain architecture decision records (ADRs)
+
+## Specific Rules
+
+### When creating new NestJS services:
+
+1. Create module, controller, and service files
+2. Define DTOs with validation decorators
+3. Implement Prisma repository pattern
+4. Add health check endpoint
+5. Configure RabbitMQ/gRPC transport
+6. Add environment configuration
+7. Write unit tests
+8. Update API gateway routing
+
+### When adding Anchor instructions:
+
+1. Define account structure with proper constraints
+2. Implement access control checks
+3. Use checked arithmetic for all math
+4. Emit events for state changes
+5. Write comprehensive tests
+6. Document account derivations
+7. Update TypeScript client code
+
+### When creating React components:
+
+1. Start with Server Component
+2. Add 'use client' only if needed (state, effects, browser APIs)
+3. Implement proper TypeScript props interface
+4. Add loading and error states
+5. Use shadcn/ui components when possible
+6. Make responsive (mobile-first)
+7. Implement accessibility (ARIA labels, keyboard navigation)
+
+### When handling sensitive data:
+
+1. Never log sensitive information
+2. Use encryption at rest and in transit
+3. Implement proper access control
+4. Audit all access to sensitive data
+5. Follow principle of least privilege
+
+## Performance Optimization
+
+- Lazy load heavy components
+- Implement code splitting
+- Use React Query for server state caching
+- Optimize database queries (select only needed fields)
+- Use connection pooling for databases
+- Implement request deduplication
+- Use CDN for static assets
+- Minimize bundle size (check with bundle analyzer)
+
+## Accessibility
+
+- Use semantic HTML elements
+- Implement keyboard navigation
+- Add ARIA labels where necessary
+- Ensure color contrast meets WCAG AA standards
+- Test with screen readers
+- Provide alt text for images
+- Implement focus management
+
+## Solana Best Practices
+
+- Use commitment level "confirmed" for most operations
+- Implement transaction confirmation monitoring
+- Handle network congestion gracefully
+- Use versioned transactions when possible
+- Implement proper priority fees
+- Test on devnet before mainnet deployment
+- Validate all accounts before usage
+- Use instruction data packing efficiently
+
+## MPC Wallet Security
+
+- Never reconstruct full private key in memory
+- Implement threshold signatures correctly
+- Secure key share storage (encrypted)
+- Implement key share rotation
+- Log all signing operations
+- Implement rate limiting on signing endpoints
+- Validate transaction payloads before signing
+- Implement emergency key recovery procedures
+
+## Deployment Checklist
+
+- [ ] All tests passing
+- [ ] Environment variables configured
+- [ ] Database migrations applied
+- [ ] API documentation updated
+- [ ] Security audit completed
+- [ ] Performance testing done
+- [ ] Monitoring and alerts configured
+- [ ] Backup and recovery procedures tested
+- [ ] Rollback plan documented
+- [ ] Changelog updated
+
+## Code Review Checklist
+
+- [ ] Code follows style guidelines
+- [ ] Proper error handling implemented
+- [ ] Tests written and passing
+- [ ] Security considerations addressed
+- [ ] Performance implications considered
+- [ ] Documentation updated
+- [ ] No commented-out code
+- [ ] No console.log in production code
+- [ ] Proper typing (no 'any' without justification)
+- [ ] Accessible UI components

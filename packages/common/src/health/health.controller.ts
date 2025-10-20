@@ -14,7 +14,7 @@ export class HealthController {
   async check() {
     try {
       return await this.healthService.check();
-    } catch (error) {
+    } catch (_error) {
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -33,7 +33,7 @@ export class HealthController {
   async ready() {
     try {
       return await this.healthService.ready();
-    } catch (error) {
+    } catch (_error) {
       throw new HttpException(
         {
           statusCode: HttpStatus.SERVICE_UNAVAILABLE,

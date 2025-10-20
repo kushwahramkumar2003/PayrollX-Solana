@@ -1,7 +1,14 @@
 import { Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
 import { AnchorProvider, Program } from "@coral-xyz/anchor";
-import { Wallet } from "@solana/wallet-adapter-base";
-import { PayrollSolana } from "../types/payroll_solana";
+// import { Wallet } from "@solana/wallet-adapter-base";
+// import { PayrollSolana } from "../types/payroll_solana";
+
+// Define a simple wallet interface compatible with Anchor
+interface Wallet {
+  publicKey: PublicKey;
+  signTransaction: <T extends any>(tx: T) => Promise<T>;
+  signAllTransactions: <T extends any>(txs: T[]) => Promise<T[]>;
+}
 
 // Program ID - should match your deployed program
 const PROGRAM_ID = new PublicKey(
@@ -22,15 +29,13 @@ export const connection = new Connection(
 );
 
 // Initialize Anchor program
-export function getProgram(wallet: Wallet): Program<PayrollSolana> {
+export function getProgram(wallet: Wallet): Program<any> {
   const provider = new AnchorProvider(connection, wallet, {
     preflightCommitment: "confirmed",
   });
 
-  return new Program(
-    require("../programs/payroll-solana/target/idl/payroll_solana.json"),
-    provider
-  );
+  // For now, return a mock program until we have the actual IDL
+  return {} as Program<any>;
 }
 
 // PDA helpers

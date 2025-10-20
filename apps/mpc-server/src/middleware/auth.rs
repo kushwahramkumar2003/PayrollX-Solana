@@ -4,7 +4,6 @@ use actix_web::dev::{ServiceResponse, Transform, Service};
 use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm};
 use serde::{Deserialize, Serialize};
 use std::future::{ready, Ready};
-use std::pin::Pin;
 use std::task::{Context, Poll};
 
 #[allow(dead_code)]

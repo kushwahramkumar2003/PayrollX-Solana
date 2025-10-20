@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@payrollx/ui";
-import { Bell, Search, User, ChevronDown, LogOut } from "lucide-react";
+// import { Button } from "@payrollx/ui";
+// import { Bell, Search, User, ChevronDown, LogOut } from "lucide-react";
 
 interface User {
   id: string;
@@ -33,7 +33,7 @@ export function Header({ user }: HeaderProps) {
           {/* Search */}
           <div className="flex-1 max-w-lg">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400">🔍</span>
               <input
                 type="text"
                 placeholder="Search..."
@@ -45,15 +45,14 @@ export function Header({ user }: HeaderProps) {
           {/* Right side */}
           <div className="flex items-center space-x-4">
             {/* Notifications */}
-            <Button variant="ghost" size="sm">
-              <Bell className="h-5 w-5" />
-            </Button>
+                <button className="p-2 hover:bg-gray-100 rounded-md">
+                  <span className="h-5 w-5">🔔</span>
+                </button>
 
             {/* Profile dropdown */}
             <div className="relative">
-              <Button
-                variant="ghost"
-                className="flex items-center space-x-2"
+              <button
+                className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-md"
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
               >
                 <div className="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
@@ -65,8 +64,8 @@ export function Header({ user }: HeaderProps) {
                 <span className="text-sm font-medium text-gray-700">
                   {user.firstName} {user.lastName}
                 </span>
-                <ChevronDown className="h-4 w-4 text-gray-400" />
-              </Button>
+                <span className="h-4 w-4 text-gray-400">▼</span>
+              </button>
 
               {/* Dropdown menu */}
               {isProfileOpen && (
@@ -80,13 +79,13 @@ export function Header({ user }: HeaderProps) {
                       {user.role.toLowerCase()}
                     </p>
                   </div>
-                  <button
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </button>
+                      <button
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={handleLogout}
+                      >
+                        <span className="h-4 w-4 mr-2">🚪</span>
+                        Sign Out
+                      </button>
                 </div>
               )}
             </div>

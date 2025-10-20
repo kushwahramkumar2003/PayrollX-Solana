@@ -1,133 +1,93 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@payrollx/ui";
-import { Button } from "@payrollx/ui";
-import { Input } from "@payrollx/ui";
-import { Label } from "@payrollx/ui";
-import { Alert, AlertDescription } from "@payrollx/ui";
-import {
-  Loader2,
-  Save,
-  Building2,
-  Users,
-  DollarSign,
-  Clock,
-} from "lucide-react";
+import { useState, useEffect } from "react";
 
-const organizationSchema = z.object({
-  name: z.string().min(2, "Organization name must be at least 2 characters"),
-  payrollSchedule: z.string().min(1, "Payroll schedule is required"),
-  defaultCurrency: z.string().min(1, "Default currency is required"),
-  timezone: z.string().min(1, "Timezone is required"),
-});
-
-type OrganizationFormData = z.infer<typeof organizationSchema>;
-
-interface Organization {
-  id: string;
-  name: string;
-  config: {
-    payrollSchedule: string;
-    defaultCurrency: string;
+interface UserSettings {
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  notifications: {
+    email: boolean;
+    sms: boolean;
+    push: boolean;
+  };
+  preferences: {
+    theme: string;
+    language: string;
     timezone: string;
   };
-  authorizedSigners: string[];
-  onboardingCompleted: boolean;
 }
 
 export default function SettingsPage() {
-  const [organization, setOrganization] = useState<Organization | null>(null);
+  const [settings, setSettings] = useState<UserSettings>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    role: "",
+    notifications: {
+      email: true,
+      sms: false,
+      push: true,
+    },
+    preferences: {
+      theme: "system",
+      language: "en",
+      timezone: "UTC",
+    },
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<OrganizationFormData>({
-    resolver: zodResolver(organizationSchema),
-  });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    const fetchOrganization = async () => {
-      try {
-        const token = localStorage.getItem("accessToken");
-        if (!token) return;
+    fetchSettings();
+  }, []);
 
-        const response = await fetch("/api/organizations/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+  const fetchSettings = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch("/api/auth/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          setOrganization(data);
-          reset({
-            name: data.name,
-            payrollSchedule: data.config.payrollSchedule,
-            defaultCurrency: data.config.defaultCurrency,
-            timezone: data.config.timezone,
-          });
-        }
-      } catch (error) {
-        console.error("Failed to fetch organization:", error);
-      } finally {
-        setIsLoading(false);
+      if (!response.ok) {
+        throw new Error("Failed to fetch user settings");
       }
-    };
 
-    fetchOrganization();
-  }, [reset]);
+      const data = await response.json();
+      setSettings(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const onSubmit = async (data: OrganizationFormData) => {
-    if (!organization) return;
-
+  const handleSave = async () => {
     setIsSaving(true);
-    setError(null);
-    setSuccess(null);
+    setError("");
+    setSuccess("");
 
     try {
       const token = localStorage.getItem("accessToken");
-      if (!token) return;
-
-      const response = await fetch(`/api/organizations/${organization.id}`, {
+      const response = await fetch("/api/settings", {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          name: data.name,
-          config: {
-            payrollSchedule: data.payrollSchedule,
-            defaultCurrency: data.defaultCurrency,
-            timezone: data.timezone,
-          },
-        }),
+        body: JSON.stringify(settings),
       });
 
-      if (response.ok) {
-        const updatedOrg = await response.json();
-        setOrganization(updatedOrg);
-        setSuccess("Organization settings updated successfully");
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || "Failed to update organization settings");
+      if (!response.ok) {
+        throw new Error("Failed to save settings");
       }
+
+      setSuccess("Settings saved successfully!");
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -135,241 +95,268 @@ export default function SettingsPage() {
     }
   };
 
+  const handleInputChange = (field: string, value: any) => {
+    setSettings((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleNestedInputChange = (
+    parent: string,
+    field: string,
+    value: any
+  ) => {
+    setSettings((prev) => ({
+      ...prev,
+      [parent]: {
+        ...(prev[parent as keyof UserSettings] as any),
+        [field]: value,
+      },
+    }));
+  };
+
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="h-8 bg-gray-200 rounded w-48 animate-pulse"></div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[...Array(3)].map((_, i) => (
-            <Card key={i}>
-              <CardHeader>
-                <div className="h-6 bg-gray-200 rounded w-32 animate-pulse"></div>
-                <div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="h-8 bg-gray-200 rounded w-16 animate-pulse"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (!organization) {
-    return (
-      <div className="max-w-4xl mx-auto">
-        <Alert variant="destructive">
-          <AlertDescription>Organization not found</AlertDescription>
-        </Alert>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
+    <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-600">Manage your organization settings</p>
+        <p className="text-gray-600">
+          Manage your account settings and preferences
+        </p>
       </div>
 
-      {/* Organization Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Organization</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{organization.name}</div>
-            <p className="text-xs text-muted-foreground">
-              {organization.onboardingCompleted
-                ? "Setup Complete"
-                : "Setup Pending"}
-            </p>
-          </CardContent>
-        </Card>
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Authorized Signers
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {organization.authorizedSigners.length}
+      {success && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+          {success}
+        </div>
+      )}
+
+      <div className="grid gap-6">
+        {/* Profile Settings */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            Profile Information
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                First Name
+              </label>
+              <input
+                type="text"
+                value={settings.firstName}
+                onChange={(e) => handleInputChange("firstName", e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
             </div>
-            <p className="text-xs text-muted-foreground">Signers configured</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Default Currency
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {organization.config.defaultCurrency}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Last Name
+              </label>
+              <input
+                type="text"
+                value={settings.lastName}
+                onChange={(e) => handleInputChange("lastName", e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
             </div>
-            <p className="text-xs text-muted-foreground">Primary currency</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Organization Settings Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Organization Settings</CardTitle>
-          <CardDescription>
-            Update your organization configuration
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            {success && (
-              <Alert>
-                <AlertDescription>{success}</AlertDescription>
-              </Alert>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="name">Organization Name</Label>
-                <Input
-                  id="name"
-                  {...register("name")}
-                  className={errors.name ? "border-red-500" : ""}
-                />
-                {errors.name && (
-                  <p className="text-sm text-red-500">{errors.name.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="defaultCurrency">Default Currency</Label>
-                <select
-                  id="defaultCurrency"
-                  {...register("defaultCurrency")}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="SOL">SOL</option>
-                  <option value="USDC">USDC</option>
-                  <option value="USDT">USDT</option>
-                </select>
-                {errors.defaultCurrency && (
-                  <p className="text-sm text-red-500">
-                    {errors.defaultCurrency.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="payrollSchedule">Payroll Schedule</Label>
-                <select
-                  id="payrollSchedule"
-                  {...register("payrollSchedule")}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="WEEKLY">Weekly</option>
-                  <option value="BIWEEKLY">Bi-weekly</option>
-                  <option value="MONTHLY">Monthly</option>
-                  <option value="QUARTERLY">Quarterly</option>
-                </select>
-                {errors.payrollSchedule && (
-                  <p className="text-sm text-red-500">
-                    {errors.payrollSchedule.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="timezone">Timezone</Label>
-                <select
-                  id="timezone"
-                  {...register("timezone")}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="UTC">UTC</option>
-                  <option value="America/New_York">Eastern Time</option>
-                  <option value="America/Chicago">Central Time</option>
-                  <option value="America/Denver">Mountain Time</option>
-                  <option value="America/Los_Angeles">Pacific Time</option>
-                  <option value="Europe/London">London</option>
-                  <option value="Europe/Paris">Paris</option>
-                  <option value="Asia/Tokyo">Tokyo</option>
-                  <option value="Asia/Shanghai">Shanghai</option>
-                </select>
-                {errors.timezone && (
-                  <p className="text-sm text-red-500">
-                    {errors.timezone.message}
-                  </p>
-                )}
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                value={settings.email}
+                onChange={(e) => handleInputChange("email", e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
             </div>
-
-            <div className="flex justify-end">
-              <Button type="submit" disabled={isSaving}>
-                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <Save className="h-4 w-4 mr-2" />
-                Save Settings
-              </Button>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Role
+              </label>
+              <input
+                type="text"
+                value={settings.role}
+                disabled
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
+              />
             </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Authorized Signers */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Authorized Signers</CardTitle>
-          <CardDescription>
-            Manage who can authorize payroll transactions
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {organization.authorizedSigners.map((signer, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-4 border rounded-lg"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                    <Users className="h-5 w-5 text-gray-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">
-                      Signer #{index + 1}
-                    </h3>
-                    <p className="text-sm text-gray-500">{signer}</p>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm">
-                  Remove
-                </Button>
-              </div>
-            ))}
-
-            <Button variant="outline" className="w-full">
-              <Users className="h-4 w-4 mr-2" />
-              Add Authorized Signer
-            </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Notification Settings */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            Notification Preferences
+          </h2>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Email Notifications
+                </label>
+                <p className="text-sm text-gray-500">
+                  Receive notifications via email
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={settings.notifications.email}
+                onChange={(e) =>
+                  handleNestedInputChange(
+                    "notifications",
+                    "email",
+                    e.target.checked
+                  )
+                }
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  SMS Notifications
+                </label>
+                <p className="text-sm text-gray-500">
+                  Receive notifications via SMS
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={settings.notifications.sms}
+                onChange={(e) =>
+                  handleNestedInputChange(
+                    "notifications",
+                    "sms",
+                    e.target.checked
+                  )
+                }
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Push Notifications
+                </label>
+                <p className="text-sm text-gray-500">
+                  Receive push notifications
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={settings.notifications.push}
+                onChange={(e) =>
+                  handleNestedInputChange(
+                    "notifications",
+                    "push",
+                    e.target.checked
+                  )
+                }
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* App Preferences */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            App Preferences
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Theme
+              </label>
+              <select
+                value={settings.preferences.theme}
+                onChange={(e) =>
+                  handleNestedInputChange(
+                    "preferences",
+                    "theme",
+                    e.target.value
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="system">System</option>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Language
+              </label>
+              <select
+                value={settings.preferences.language}
+                onChange={(e) =>
+                  handleNestedInputChange(
+                    "preferences",
+                    "language",
+                    e.target.value
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Timezone
+              </label>
+              <select
+                value={settings.preferences.timezone}
+                onChange={(e) =>
+                  handleNestedInputChange(
+                    "preferences",
+                    "timezone",
+                    e.target.value
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="UTC">UTC</option>
+                <option value="America/New_York">Eastern Time</option>
+                <option value="America/Chicago">Central Time</option>
+                <option value="America/Denver">Mountain Time</option>
+                <option value="America/Los_Angeles">Pacific Time</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Save Button */}
+        <div className="flex justify-end">
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold px-6 py-2 rounded-lg"
+          >
+            {isSaving ? "Saving..." : "Save Settings"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
-

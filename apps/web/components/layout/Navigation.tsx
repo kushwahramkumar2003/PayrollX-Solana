@@ -2,22 +2,22 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import {
-  LayoutDashboard,
-  Building2,
-  Users,
-  DollarSign,
-  Shield,
-  Settings,
-} from "lucide-react";
+// import {
+//   LayoutDashboard,
+//   Building2,
+//   Users,
+//   DollarSign,
+//   Shield,
+//   Settings,
+// } from "lucide-react";
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Organizations", href: "/organizations", icon: Building2 },
-  { name: "Employees", href: "/employees", icon: Users },
-  { name: "Payroll", href: "/payroll", icon: DollarSign },
-  { name: "Compliance", href: "/compliance", icon: Shield },
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Dashboard", href: "/dashboard", icon: "📊" },
+  { name: "Organizations", href: "/organizations", icon: "🏢" },
+  { name: "Employees", href: "/employees", icon: "👥" },
+  { name: "Payroll", href: "/payroll", icon: "💰" },
+  { name: "Compliance", href: "/compliance", icon: "🛡️" },
+  { name: "Settings", href: "/settings", icon: "⚙️" },
 ];
 
 export function Navigation() {
@@ -42,7 +42,7 @@ export function Navigation() {
                   }
                 `}
               >
-                <item.icon className="h-4 w-4 mr-2" />
+                    <span className="h-4 w-4 mr-2">{item.icon}</span>
                 {item.name}
               </Link>
             );
@@ -52,4 +52,3 @@ export function Navigation() {
     </nav>
   );
 }
-

@@ -17,7 +17,11 @@ export const metadata: Metadata = {
   description: "Decentralized payroll management on Solana blockchain",
   keywords: ["payroll", "solana", "blockchain", "crypto", "payments"],
   authors: [{ name: "PayrollX Team" }],
-  viewport: "width=device-width, initial-scale=1",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -27,10 +31,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers>
-          {children}
-        </Providers>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

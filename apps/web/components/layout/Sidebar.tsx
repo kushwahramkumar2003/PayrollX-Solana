@@ -3,18 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Button } from "@payrollx/ui";
-import {
-  LayoutDashboard,
-  Building2,
-  Users,
-  DollarSign,
-  Shield,
-  Settings,
-  LogOut,
-  Menu,
-  X,
-} from "lucide-react";
+// import { Button } from "@payrollx/ui";
+// import {
+//   LayoutDashboard,
+//   Building2,
+//   Users,
+//   DollarSign,
+//   Shield,
+//   Settings,
+//   LogOut,
+//   Menu,
+//   X,
+// } from "lucide-react";
 
 interface User {
   id: string;
@@ -29,12 +29,12 @@ interface SidebarProps {
 }
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Organizations", href: "/organizations", icon: Building2 },
-  { name: "Employees", href: "/employees", icon: Users },
-  { name: "Payroll", href: "/payroll", icon: DollarSign },
-  { name: "Compliance", href: "/compliance", icon: Shield },
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Dashboard", href: "/dashboard", icon: "📊" },
+  { name: "Organizations", href: "/organizations", icon: "🏢" },
+  { name: "Employees", href: "/employees", icon: "👥" },
+  { name: "Payroll", href: "/payroll", icon: "💰" },
+  { name: "Compliance", href: "/compliance", icon: "🛡️" },
+  { name: "Settings", href: "/settings", icon: "⚙️" },
 ];
 
 export function Sidebar({ user }: SidebarProps) {
@@ -52,9 +52,9 @@ export function Sidebar({ user }: SidebarProps) {
     <>
       {/* Mobile menu button */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
-        <Button variant="outline" size="sm" onClick={() => setIsOpen(!isOpen)}>
-          {isOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-        </Button>
+            <button className="p-2 border border-gray-300 rounded-md hover:bg-gray-50" onClick={() => setIsOpen(!isOpen)}>
+              {isOpen ? <span className="h-4 w-4">✕</span> : <span className="h-4 w-4">☰</span>}
+            </button>
       </div>
 
       {/* Mobile overlay */}
@@ -118,7 +118,7 @@ export function Sidebar({ user }: SidebarProps) {
                   `}
                   onClick={() => setIsOpen(false)}
                 >
-                  <item.icon className="h-5 w-5 mr-3" />
+                      <span className="h-5 w-5 mr-3">{item.icon}</span>
                   {item.name}
                 </Link>
               );
@@ -126,16 +126,15 @@ export function Sidebar({ user }: SidebarProps) {
           </nav>
 
           {/* Logout */}
-          <div className="px-4 py-4 border-t">
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
+              <div className="px-4 py-4 border-t">
+                <button
+                  className="w-full flex items-center justify-start px-3 py-2 text-sm font-medium rounded-md border border-gray-300 hover:bg-gray-100"
+                  onClick={handleLogout}
+                >
+                  <span className="h-4 w-4 mr-2">🚪</span>
+                  Sign Out
+                </button>
+              </div>
         </div>
       </div>
     </>

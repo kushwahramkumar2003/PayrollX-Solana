@@ -1,22 +1,13 @@
 "use client";
 
-import { ThemeProvider } from "next-themes";
-import { Toaster } from "sonner";
+// import { ThemeProvider } from "next-themes";
+// import { Toaster } from "sonner";
+// import { SolanaWalletProvider } from "../components/wallet/SolanaWalletProvider";
 
 interface ProvidersProps {
   children: React.ReactNode;
 }
 
 export function Providers({ children }: ProvidersProps) {
-  return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      {children}
-      <Toaster position="top-right" expand={false} richColors closeButton />
-    </ThemeProvider>
-  );
+  return <>{children}</>;
 }

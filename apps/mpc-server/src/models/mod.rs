@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct KeygenRequest {
     pub threshold: u32,
@@ -8,6 +9,7 @@ pub struct KeygenRequest {
     pub request_id: String,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct KeygenResponse {
     pub wallet_id: String,
@@ -16,6 +18,7 @@ pub struct KeygenResponse {
     pub threshold: u32,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SignRequest {
     pub wallet_id: String,
@@ -23,18 +26,21 @@ pub struct SignRequest {
     pub share_ids: Vec<String>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SignResponse {
     pub signature: String, // base64 encoded signature
     pub public_key: String,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct HealthResponse {
     pub status: String,
     pub timestamp: String,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct KeyShare {
     pub id: String,
@@ -45,6 +51,7 @@ pub struct KeyShare {
 }
 
 impl KeyShare {
+    #[allow(dead_code)]
     pub fn new(wallet_id: String, share_data: Vec<u8>, retention_hours: u64) -> Self {
         let now = chrono::Utc::now();
         Self {
@@ -56,11 +63,13 @@ impl KeyShare {
         }
     }
     
+    #[allow(dead_code)]
     pub fn is_expired(&self) -> bool {
         chrono::Utc::now() > self.expires_at
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct WalletInfo {
     pub wallet_id: String,

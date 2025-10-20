@@ -1,9 +1,9 @@
 use std::collections::HashMap;
-use std::sync::Mutex;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use crate::models::{KeyShare, WalletInfo};
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct KeyManager {
     shares: Arc<RwLock<HashMap<String, Vec<KeyShare>>>>, // wallet_id -> shares
@@ -11,6 +11,7 @@ pub struct KeyManager {
 }
 
 impl KeyManager {
+    #[allow(dead_code)]
     pub fn new() -> Self {
         Self {
             shares: Arc::new(RwLock::new(HashMap::new())),
@@ -18,26 +19,31 @@ impl KeyManager {
         }
     }
     
+    #[allow(dead_code)]
     pub async fn store_wallet(&self, wallet_info: WalletInfo) {
         let mut wallets = self.wallets.write().await;
         wallets.insert(wallet_info.wallet_id.clone(), wallet_info);
     }
     
+    #[allow(dead_code)]
     pub async fn get_wallet(&self, wallet_id: &str) -> Option<WalletInfo> {
         let wallets = self.wallets.read().await;
         wallets.get(wallet_id).cloned()
     }
     
+    #[allow(dead_code)]
     pub async fn store_shares(&self, wallet_id: String, shares: Vec<KeyShare>) {
         let mut shares_map = self.shares.write().await;
         shares_map.insert(wallet_id, shares);
     }
     
+    #[allow(dead_code)]
     pub async fn get_shares(&self, wallet_id: &str) -> Option<Vec<KeyShare>> {
         let shares_map = self.shares.read().await;
         shares_map.get(wallet_id).cloned()
     }
     
+    #[allow(dead_code)]
     pub async fn get_shares_by_ids(&self, wallet_id: &str, share_ids: &[String]) -> Option<Vec<KeyShare>> {
         let shares_map = self.shares.read().await;
         if let Some(all_shares) = shares_map.get(wallet_id) {
@@ -57,12 +63,13 @@ impl KeyManager {
         }
     }
     
+    #[allow(dead_code)]
     pub async fn cleanup_expired_keys(&self) {
         let mut shares_map = self.shares.write().await;
         let mut wallets_map = self.wallets.write().await;
         
         // Remove expired shares
-        for (wallet_id, shares) in shares_map.iter_mut() {
+        for (_wallet_id, shares) in shares_map.iter_mut() {
             shares.retain(|share| !share.is_expired());
         }
         
@@ -81,6 +88,7 @@ impl KeyManager {
         log::info!("Cleaned up expired keys. Remaining wallets: {}", wallets_map.len());
     }
     
+    #[allow(dead_code)]
     pub async fn remove_wallet(&self, wallet_id: &str) {
         let mut shares_map = self.shares.write().await;
         let mut wallets_map = self.wallets.write().await;

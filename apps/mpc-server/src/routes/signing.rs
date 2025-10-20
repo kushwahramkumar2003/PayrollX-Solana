@@ -1,6 +1,7 @@
 use actix_web::{post, web, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+use base64::{engine::general_purpose, Engine as _};
 use crate::services::mpc_engine::MpcEngine;
 
 #[derive(Deserialize)]
@@ -21,7 +22,7 @@ pub async fn sign(
     req: web::Json<SignRequest>,
     engine: web::Data<Arc<MpcEngine>>,
 ) -> impl Responder {
-    let message = match base64::decode(&req.message) {
+    let message = match general_purpose::STANDARD.decode(&req.message) {
         Ok(m) => m,
         Err(e) => return HttpResponse::BadRequest().json(serde_json::json!({
             "error": format!("Invalid base64 message: {}", e)
@@ -31,7 +32,7 @@ pub async fn sign(
     match engine.sign_message(&req.wallet_id, &message, req.share_ids.clone()) {
         Ok(signature) => {
             HttpResponse::Ok().json(SignResponse {
-                signature: base64::encode(signature.to_bytes()),
+                signature: general_purpose::STANDARD.encode(signature.to_bytes()),
                 public_key: req.wallet_id.clone(),
             })
         }

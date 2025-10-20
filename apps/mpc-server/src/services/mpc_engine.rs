@@ -1,4 +1,4 @@
-use ed25519_dalek::{SigningKey, VerifyingKey, SecretKey, Signature, Signer};
+use ed25519_dalek::{SigningKey, VerifyingKey, Signature, Signer};
 use rand::rngs::OsRng;
 use uuid::Uuid;
 use std::collections::HashMap;
@@ -40,7 +40,7 @@ impl MpcEngine {
         // Simulate threshold shares (simplified for PoC)
         let shares: Vec<KeyShare> = (0..total_shares)
             .map(|i| KeyShare {
-                share_id: format!("share_{}_{}", wallet_id, i),
+                share_id: format!("share_{wallet_id}_{i}"),
                 secret_bytes: signing_key.to_bytes().to_vec(), // In production: split key properly
             })
             .collect();

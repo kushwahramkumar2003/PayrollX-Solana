@@ -1,4 +1,4 @@
-use actix_web::{dev::ServiceRequest, Error, HttpMessage, HttpResponse};
+use actix_web::{dev::ServiceRequest, Error};
 use actix_web::error::ErrorUnauthorized;
 use actix_web::dev::{ServiceResponse, Transform, Service};
 use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm};
@@ -13,6 +13,7 @@ struct Claims {
     exp: usize,
 }
 
+#[allow(dead_code)]
 pub struct AuthMiddleware;
 
 impl<S, B> Transform<S, ServiceRequest> for AuthMiddleware
@@ -51,13 +52,11 @@ where
     }
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        let fut = self.service.call(req);
-        Box::pin(async move {
-            fut.await
-        })
+        Box::pin(self.service.call(req))
     }
 }
 
+#[allow(dead_code)]
 async fn validate_jwt(req: &ServiceRequest) -> Result<(), Error> {
     let auth_header = req.headers().get("Authorization")
         .and_then(|h| h.to_str().ok())

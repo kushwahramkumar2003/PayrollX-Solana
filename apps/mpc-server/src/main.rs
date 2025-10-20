@@ -17,7 +17,7 @@ async fn main() -> std::io::Result<()> {
     let host = config.host.clone();
     let port = config.port;
 
-    log::info!("Starting MPC server on {}:{}", host, port);
+    log::info!("Starting MPC server on {host}:{port}");
 
     // Create MPC engine
     let mpc_engine = Arc::new(services::mpc_engine::MpcEngine::new());

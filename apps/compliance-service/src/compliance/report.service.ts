@@ -71,11 +71,16 @@ export class ReportService {
       return { ...report, filePath };
     } catch (error) {
       // Update report status to failed
+      const errorMessage =
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : String(error);
+
       await this.prisma.complianceReport.update({
         where: { id: report.id },
         data: {
           status: "FAILED",
-          error: error.message,
+          error: errorMessage,
         },
       });
 

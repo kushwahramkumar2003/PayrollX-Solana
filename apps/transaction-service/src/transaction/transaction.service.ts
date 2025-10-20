@@ -79,11 +79,16 @@ export class TransactionService {
       return { signature, status: "COMPLETED" };
     } catch (error) {
       // Update status to FAILED
+      const errorMessage =
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : String(error);
+
       await this.prisma.transaction.update({
         where: { id },
         data: {
           status: "FAILED",
-          error: error.message,
+          error: errorMessage,
         },
       });
 

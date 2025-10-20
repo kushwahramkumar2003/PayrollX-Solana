@@ -81,11 +81,16 @@ export class NotificationService {
       return result;
     } catch (error) {
       // Update status to FAILED
+      const errorMessage =
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : String(error);
+
       await this.prisma.notification.update({
         where: { id },
         data: {
           status: "FAILED",
-          error: error.message,
+          error: errorMessage,
         },
       });
 

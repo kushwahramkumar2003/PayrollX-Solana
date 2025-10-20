@@ -25,7 +25,8 @@
     "prisma:generate:transaction": "prisma generate --schema=prisma/transaction/schema.prisma",
     "prisma:generate:notification": "prisma generate --schema=prisma/notification/schema.prisma",
     "prisma:generate:compliance": "prisma generate --schema=prisma/compliance/schema.prisma",
-    "prisma:generate:all": "npm run prisma:generate:auth && npm run prisma:generate:org && npm run prisma:generate:employee && npm run prisma:generate:wallet && npm run prisma:generate:payroll && npm run prisma:generate:transaction && npm run prisma:generate:notification && npm run prisma:generate:compliance"
+    "prisma:generate:all": "npm run prisma:generate:auth && npm run prisma:generate:org && npm run prisma:generate:employee && npm run prisma:generate:wallet && npm run prisma:generate:payroll && npm run prisma:generate:transaction && npm run prisma:generate:notification && npm run prisma:generate:compliance",
+    "lint": "eslint \"src/**/*.ts\" --fix"
   },
   "dependencies": {
     "@prisma/client": "^5.0.0",

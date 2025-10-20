@@ -1,4 +1,4 @@
-import { config } from "@payrollx/eslint-config/react-internal";
+import { config } from "@payrollx/eslint-config/base";
 
 /** @type {import("eslint").Linter.Config} */
 export default config;

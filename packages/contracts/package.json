@@ -14,7 +14,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "lint": "eslint \"src/**/*.ts\" --fix"
   },
   "devDependencies": {
     "typescript": "^5.0.0",

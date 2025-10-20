@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD Pipeline
 
 on:
   push:
@@ -6,8 +6,14 @@ on:
   pull_request:
     branches: [main, develop]
 
+env:
+  NODE_VERSION: "20"
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_DB: payrollx_test
+
 jobs:
-  build:
+  # Build and test packages
+  packages:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,24 +21,98 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-
-      - name: Enable Corepack
-        run: corepack enable
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        run: yarn install --immutable
+        run: npm ci
 
-      - name: Lint
-        run: yarn lint
+      - name: Build packages
+        run: npm run build --workspace=packages/common --workspace=packages/contracts --workspace=packages/database --workspace=packages/ui
 
-      - name: Build
-        run: yarn build
+      - name: Lint packages
+        run: npm run lint --workspace=packages/common --workspace=packages/contracts --workspace=packages/database --workspace=packages/ui
 
-      - name: Test
-        run: yarn test
+  # Test NestJS services
+  nestjs-services:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
 
-  build-rust:
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma clients
+        run: npm run db:generate
+
+      - name: Build NestJS services
+        run: |
+          npm run build --workspace=apps/api-gateway
+          npm run build --workspace=apps/auth-service
+          npm run build --workspace=apps/org-service
+          npm run build --workspace=apps/employee-service
+          npm run build --workspace=apps/wallet-service
+          npm run build --workspace=apps/payroll-service
+          npm run build --workspace=apps/transaction-service
+          npm run build --workspace=apps/notification-service
+          npm run build --workspace=apps/compliance-service
+
+      - name: Lint NestJS services
+        run: |
+          npm run lint --workspace=apps/api-gateway
+          npm run lint --workspace=apps/auth-service
+          npm run lint --workspace=apps/org-service
+          npm run lint --workspace=apps/employee-service
+          npm run lint --workspace=apps/wallet-service
+          npm run lint --workspace=apps/payroll-service
+          npm run lint --workspace=apps/transaction-service
+          npm run lint --workspace=apps/notification-service
+          npm run lint --workspace=apps/compliance-service
+
+  # Test frontend applications
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend apps
+        run: |
+          npm run build --workspace=apps/web
+          npm run build --workspace=apps/docs
+
+      - name: Lint frontend apps
+        run: |
+          npm run lint --workspace=apps/web
+          npm run lint --workspace=apps/docs
+
+  # Build and test Rust MPC server
+  rust-mpc-server:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -42,6 +122,15 @@ jobs:
         with:
           toolchain: stable
 
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            apps/mpc-server/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
       - name: Build MPC Server
         working-directory: apps/mpc-server
         run: cargo build --release
@@ -50,3 +139,76 @@ jobs:
         working-directory: apps/mpc-server
         run: cargo test
 
+      - name: Run Rust Clippy
+        working-directory: apps/mpc-server
+        run: cargo clippy -- -D warnings
+
+  # Integration tests
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: [packages, nestjs-services, frontend, rust-mpc-server]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma clients
+        run: npm run db:generate
+
+      - name: Run integration tests
+        run: npm run test
+        env:
+          DATABASE_URL: postgresql://postgres:${{ env.POSTGRES_PASSWORD }}@localhost:5432/${{ env.POSTGRES_DB }}
+          REDIS_URL: redis://localhost:6379
+
+  # Security scan
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run security audit
+        run: npm audit --audit-level moderate
+
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}

@@ -19,7 +19,16 @@
     "db:seed": "turbo run db:seed",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f"
+    "docker:logs": "docker-compose logs -f",
+    "dev:infra": "docker-compose -f docker-compose.infra.yml up -d",
+    "dev:infra:down": "docker-compose -f docker-compose.infra.yml down",
+    "dev:start": "./dev.sh",
+    "dev:stop": "./dev.sh stop",
+    "dev:status": "./dev.sh status",
+    "dev:restart": "./dev.sh restart",
+    "dev:setup": "cp env.local .env.local && npm install && npm run db:generate && npm run build:packages",
+    "dev:health": "./health-check.sh",
+    "db:setup": "./setup-db.sh"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -40,6 +49,11 @@
   "resolutions": {
     "@payrollx/database": "*",
     "@payrollx/contracts": "*",
-    "@payrollx/common": "*"
+    "@payrollx/common": "*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "lucide-react": "^0.546.0"
   }
 }

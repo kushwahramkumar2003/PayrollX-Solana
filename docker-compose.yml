@@ -45,7 +45,7 @@ services:
 
   # Solana Test Validator
   solana:
-    image: solanalabs/solana:latest
+    image: ghcr.io/solana-labs/solana:v1.18.17
     container_name: payrollx-solana
     command: solana-test-validator --reset --quiet
     ports:
@@ -302,7 +302,7 @@ services:
       - NEXT_PUBLIC_SOLANA_RPC_URL=http://localhost:8899
       - NEXT_PUBLIC_CLUSTER=devnet
     ports:
-      - "3000:3000"
+      - "3100:3000"
     depends_on:
       - api-gateway
     networks:

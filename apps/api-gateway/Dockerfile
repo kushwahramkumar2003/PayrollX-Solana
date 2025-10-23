@@ -3,33 +3,64 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
+# Install build tools for native modules
+RUN apk add --no-cache python3 make g++
+
+# Copy root package files
 COPY package*.json ./
-COPY yarn.lock ./
+COPY turbo.json ./
+
+# Copy all package.json files
+COPY apps/api-gateway/package.json ./apps/api-gateway/
+COPY packages/common/package.json ./packages/common/
+COPY packages/contracts/package.json ./packages/contracts/
+COPY packages/database/package.json ./packages/database/
+COPY packages/typescript-config/package.json ./packages/typescript-config/
+COPY packages/eslint-config/package.json ./packages/eslint-config/
 
 # Install dependencies
-RUN yarn install --frozen-lockfile
+RUN npm ci
 
 # Copy source code
-COPY . .
+COPY apps/api-gateway ./apps/api-gateway
+COPY packages/common ./packages/common
+COPY packages/contracts ./packages/contracts
+COPY packages/database ./packages/database
+COPY packages/typescript-config ./packages/typescript-config
+
+# Build packages first (typescript-config is just JSON files, no build needed)
+RUN npm run build --workspace=@payrollx/common
+RUN npm run build --workspace=@payrollx/contracts
+RUN npm run build --workspace=@payrollx/database
 
 # Build the application
-RUN yarn build
+RUN npm run build --workspace=@payrollx/api-gateway
 
 # Runtime stage
 FROM node:20-alpine AS runtime
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY yarn.lock ./
+# Install curl for health checks
+RUN apk add --no-cache curl
 
-# Install production dependencies only
-RUN yarn install --frozen-lockfile --production
+# Copy root package files
+COPY package*.json ./
+COPY turbo.json ./
+
+# Copy package files
+COPY apps/api-gateway/package.json ./apps/api-gateway/
+COPY packages/common/package.json ./packages/common/
+COPY packages/contracts/package.json ./packages/contracts/
+COPY packages/database/package.json ./packages/database/
+COPY packages/typescript-config/package.json ./packages/typescript-config/
+COPY packages/eslint-config/package.json ./packages/eslint-config/
+
+# Install production dependencies for the @payrollx/api-gateway workspace using root lockfile
+RUN npm ci -w @payrollx/api-gateway --omit=dev
 
 # Copy built application
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/apps/api-gateway/dist ./apps/api-gateway/dist
 
 # Create logs directory
 RUN mkdir -p logs
@@ -38,5 +69,4 @@ RUN mkdir -p logs
 EXPOSE 3000
 
 # Run the application
-CMD ["node", "dist/main.js"]
-
+CMD ["npm", "run", "start", "--workspace=@payrollx/api-gateway"]

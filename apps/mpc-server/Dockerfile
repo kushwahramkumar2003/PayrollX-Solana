@@ -1,13 +1,13 @@
 # Build stage
-FROM rust:1.75-alpine AS builder
+FROM rust:1.85-alpine AS builder
 
 WORKDIR /app
 
 # Install dependencies
 RUN apk add --no-cache musl-dev
 
-# Copy Cargo files
-COPY Cargo.toml Cargo.lock ./
+# Copy Cargo manifest (Cargo.lock may not exist in dev)
+COPY Cargo.toml ./
 
 # Copy source code
 COPY src ./src

@@ -35,6 +35,7 @@
     "@nestjs/terminus": "^11.0.0",
     "@nestjs/throttler": "^5.0.1",
     "@payrollx/contracts": "*",
+    "nest-winston": "^1.9.4",
     "@payrollx/database": "*",
     "@prisma/client": "^5.0.0",
     "axios": "^1.6.0",

@@ -1,0 +1,107 @@
+# PayrollX-Solana Web Application
+
+Enterprise blockchain-based payroll management frontend built with Next.js 15, React 19, and Solana.
+
+## Tech Stack
+
+- **Framework**: Next.js 15 (App Router)
+- **UI Library**: React 19
+- **Styling**: Tailwind CSS v4
+- **Components**: Shadcn UI
+- **Blockchain**: Solana Web3.js + Wallet Adapter
+- **State Management**: Zustand
+- **Forms**: React Hook Form + Zod
+- **Data Fetching**: TanStack Query (React Query)
+- **Animations**: Framer Motion
+- **TypeScript**: Strict mode enabled
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+ or Bun
+- npm/yarn/pnpm/bun
+
+### Installation
+
+```bash
+npm install
+```
+
+### Development
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to view the application.
+
+### Build
+
+```bash
+npm run build
+npm run start
+```
+
+### Scripts
+
+- `npm run dev` - Start development server with Turbopack
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run lint:fix` - Fix ESLint errors
+- `npm run type-check` - Run TypeScript type checking
+- `npm run clean` - Clean build artifacts
+
+## Project Structure
+
+```
+apps/web-2/
+├── app/                    # Next.js App Router pages
+│   ├── (auth)/            # Authentication routes
+│   ├── (dashboard)/       # Dashboard routes
+│   ├── employee-portal/   # Employee portal
+│   └── layout.tsx         # Root layout
+├── components/            # React components
+│   ├── layout/           # Layout components
+│   ├── ui/               # Shadcn UI components
+│   └── wallet/           # Wallet components
+├── lib/                  # Utilities and helpers
+│   ├── hooks/           # Custom React hooks
+│   └── stores/          # Zustand stores
+├── types/               # TypeScript type definitions
+└── public/              # Static assets
+```
+
+## Features
+
+- ✅ Solana wallet integration (Phantom, Solflare)
+- ✅ MPC wallet management
+- ✅ Employee management
+- ✅ Payroll execution and monitoring
+- ✅ Compliance and audit logging
+- ✅ Real-time updates
+- ✅ Responsive design
+- ✅ Dark mode support
+- ✅ Protected routes with authentication
+
+## Environment Variables
+
+Copy `env.example` to `.env.local` and configure:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:4000
+NEXT_PUBLIC_SOLANA_NETWORK=devnet
+NEXT_PUBLIC_SOLANA_RPC_URL=https://api.devnet.solana.com
+```
+
+## Production Deployment
+
+This app is production-ready with:
+
+- Security headers configured
+- Console logs removed in production
+- Image optimization
+- Code splitting
+- React strict mode
+- SWC minification

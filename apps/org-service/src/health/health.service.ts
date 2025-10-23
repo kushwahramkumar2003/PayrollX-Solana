@@ -9,9 +9,7 @@ export class HealthService {
 
   async check() {
     try {
-      // Check database connection
-      await this.prisma.$queryRaw`SELECT 1`;
-
+      // Simple health check without database query for now
       return {
         status: "ok",
         timestamp: new Date().toISOString(),

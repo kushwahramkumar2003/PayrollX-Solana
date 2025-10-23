@@ -40,7 +40,7 @@ async function bootstrap() {
   // Global prefix
   app.setGlobalPrefix("api");
 
-  const port = process.env.PORT || 3005;
+  const port = process.env.PORT || 3004;
   await app.listen(port);
 
   console.log(`🚀 Wallet Service running on port ${port}`);

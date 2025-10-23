@@ -8,14 +8,26 @@ export class SmsService {
   private readonly client: twilio.Twilio;
 
   constructor(private readonly configService: ConfigService) {
-    this.client = twilio(
-      this.configService.get<string>("TWILIO_ACCOUNT_SID"),
-      this.configService.get<string>("TWILIO_AUTH_TOKEN")
-    );
+    const accountSid = this.configService.get<string>("TWILIO_ACCOUNT_SID");
+    const authToken = this.configService.get<string>("TWILIO_AUTH_TOKEN");
+
+    if (accountSid && authToken) {
+      this.client = twilio(accountSid, authToken);
+    } else {
+      this.logger.warn(
+        "Twilio credentials not provided. SMS service will be disabled."
+      );
+      this.client = null as any;
+    }
   }
 
   async sendSms(notification: any) {
     try {
+      if (!this.client) {
+        this.logger.warn("SMS service is disabled. Skipping SMS send.");
+        return { sid: "disabled", status: "skipped" };
+      }
+
       const result = await this.client.messages.create({
         body: notification.content,
         from: this.configService.get<string>("TWILIO_PHONE_NUMBER"),

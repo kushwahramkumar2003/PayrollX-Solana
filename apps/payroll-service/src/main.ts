@@ -40,7 +40,7 @@ async function bootstrap() {
   // Global prefix
   app.setGlobalPrefix("api");
 
-  const port = process.env.PORT || 3006;
+  const port = process.env.PORT || 3005;
   await app.listen(port);
 
   console.log(`🚀 Payroll Service running on port ${port}`);

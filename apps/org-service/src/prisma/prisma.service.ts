@@ -4,12 +4,31 @@ import {
   OnModuleDestroy,
   Logger,
 } from "@nestjs/common";
-import { createOrganizationDbConnection } from "@payrollx/database";
 
 @Injectable()
 export class PrismaService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
-  private prisma = createOrganizationDbConnection();
+  private prisma: any;
+
+  constructor() {
+    // Create PrismaClient directly with correct URL
+    const {
+      PrismaClient,
+    } = require("../../../../node_modules/.prisma/organization/index.js");
+    const databaseUrl =
+      process.env.DATABASE_URL ||
+      "postgresql://admin:adminpass@localhost:5432/payrollx_main";
+
+    this.logger.log("Creating PrismaClient with URL:", databaseUrl);
+
+    this.prisma = new PrismaClient({
+      datasources: {
+        db: {
+          url: databaseUrl,
+        },
+      },
+    });
+  }
 
   async onModuleInit() {
     try {

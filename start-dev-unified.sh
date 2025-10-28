@@ -259,6 +259,26 @@ build_packages() {
     print_status "Shared packages built successfully"
 }
 
+setup_prisma() {
+    print_header "Setting up Prisma Databases"
+    
+    # Auth service
+    print_info "Generating Prisma clients..."
+    cd "$PROJECT_ROOT/apps/auth-service"
+    npx prisma generate > "$LOG_DIR/auth-prisma-generate.log" 2>&1 || {
+        print_error "Failed to generate auth Prisma client"
+        return 1
+    }
+    
+    print_info "Applying auth service migrations..."
+    npx prisma migrate deploy >> "$LOG_DIR/auth-prisma-generate.log" 2>&1 || {
+        print_error "Failed to apply auth migrations"
+        return 1
+    }
+    
+    print_status "Prisma setup complete"
+}
+
 start_microservices() {
     print_header "Starting Microservices"
     
@@ -459,6 +479,10 @@ start_all() {
     build_packages || {
         print_error "Failed to build packages"
         exit 1
+    }
+    
+    setup_prisma || {
+        print_warning "Prisma setup had issues, continuing anyway..."
     }
     
     start_microservices || {

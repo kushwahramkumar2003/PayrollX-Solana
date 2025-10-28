@@ -40,23 +40,50 @@ export class GatewayService {
     };
   }
 
-  async proxyRequest(service: string, params: any, query: any) {
+  async proxyRequest(
+    service: string,
+    params: any,
+    query: any,
+    body?: any,
+    method: string = 'GET',
+  ) {
     const serviceUrl = this.serviceUrls[service];
     if (!serviceUrl) {
       throw new Error(`Unknown service: ${service}`);
     }
 
     try {
-      const url = `${serviceUrl}/api/${service}`;
-      this.logger.log(`Proxying request to ${service} service: ${url}`);
+      // Extract the path after the service name
+      const wildcardPath = params[0] || '';
+      const url = `${serviceUrl}/${wildcardPath}`;
+      this.logger.log(`Proxying ${method} request to ${service} service: ${url}`);
 
-      const response = await firstValueFrom(
-        this.httpService.get(url, { params: query }),
-      );
+      let response;
+      switch (method.toUpperCase()) {
+        case 'POST':
+          response = await firstValueFrom(
+            this.httpService.post(url, body, { params: query }),
+          );
+          break;
+        case 'PUT':
+          response = await firstValueFrom(
+            this.httpService.put(url, body, { params: query }),
+          );
+          break;
+        case 'DELETE':
+          response = await firstValueFrom(
+            this.httpService.delete(url, { params: query }),
+          );
+          break;
+        default:
+          response = await firstValueFrom(
+            this.httpService.get(url, { params: query }),
+          );
+      }
 
       return response.data;
     } catch (error) {
-      this.logger.error(`Error proxying request to ${service}:`, error);
+      this.logger.error(`Error proxying ${method} request to ${service}:`, error);
       throw error;
     }
   }

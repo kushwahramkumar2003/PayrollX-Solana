@@ -1,67 +1,106 @@
 import {
   Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
+  All,
   Body,
   Param,
   Query,
+  Req,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Request } from 'express';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { GatewayService } from './gateway.service';
 
 @ApiTags('Gateway')
-@Controller('gateway')
+@Controller()
 export class GatewayController {
   constructor(private readonly gatewayService: GatewayService) {}
 
-  @Get('auth/*')
+  @All('auth/*')
   @ApiOperation({ summary: 'Proxy to auth service' })
-  async proxyToAuth(@Param() params: any, @Query() query: any) {
-    return this.gatewayService.proxyRequest('auth', params, query);
+  async proxyToAuth(
+    @Req() req: Request,
+    @Param() params: any,
+    @Query() query: any,
+    @Body() body: any,
+  ) {
+    return this.gatewayService.proxyRequest('auth', params, query, body, req.method);
   }
 
-  @Get('org/*')
+  @All('org/*')
   @ApiOperation({ summary: 'Proxy to org service' })
-  async proxyToOrg(@Param() params: any, @Query() query: any) {
-    return this.gatewayService.proxyRequest('org', params, query);
+  async proxyToOrg(
+    @Req() req: Request,
+    @Param() params: any,
+    @Query() query: any,
+    @Body() body: any,
+  ) {
+    return this.gatewayService.proxyRequest('org', params, query, body, req.method);
   }
 
-  @Get('employee/*')
+  @All('employee/*')
   @ApiOperation({ summary: 'Proxy to employee service' })
-  async proxyToEmployee(@Param() params: any, @Query() query: any) {
-    return this.gatewayService.proxyRequest('employee', params, query);
+  async proxyToEmployee(
+    @Req() req: Request,
+    @Param() params: any,
+    @Query() query: any,
+    @Body() body: any,
+  ) {
+    return this.gatewayService.proxyRequest('employee', params, query, body, req.method);
   }
 
-  @Get('wallet/*')
+  @All('wallet/*')
   @ApiOperation({ summary: 'Proxy to wallet service' })
-  async proxyToWallet(@Param() params: any, @Query() query: any) {
-    return this.gatewayService.proxyRequest('wallet', params, query);
+  async proxyToWallet(
+    @Req() req: Request,
+    @Param() params: any,
+    @Query() query: any,
+    @Body() body: any,
+  ) {
+    return this.gatewayService.proxyRequest('wallet', params, query, body, req.method);
   }
 
-  @Get('payroll/*')
+  @All('payroll/*')
   @ApiOperation({ summary: 'Proxy to payroll service' })
-  async proxyToPayroll(@Param() params: any, @Query() query: any) {
-    return this.gatewayService.proxyRequest('payroll', params, query);
+  async proxyToPayroll(
+    @Req() req: Request,
+    @Param() params: any,
+    @Query() query: any,
+    @Body() body: any,
+  ) {
+    return this.gatewayService.proxyRequest('payroll', params, query, body, req.method);
   }
 
-  @Get('transaction/*')
+  @All('transaction/*')
   @ApiOperation({ summary: 'Proxy to transaction service' })
-  async proxyToTransaction(@Param() params: any, @Query() query: any) {
-    return this.gatewayService.proxyRequest('transaction', params, query);
+  async proxyToTransaction(
+    @Req() req: Request,
+    @Param() params: any,
+    @Query() query: any,
+    @Body() body: any,
+  ) {
+    return this.gatewayService.proxyRequest('transaction', params, query, body, req.method);
   }
 
-  @Get('notification/*')
+  @All('notification/*')
   @ApiOperation({ summary: 'Proxy to notification service' })
-  async proxyToNotification(@Param() params: any, @Query() query: any) {
-    return this.gatewayService.proxyRequest('notification', params, query);
+  async proxyToNotification(
+    @Req() req: Request,
+    @Param() params: any,
+    @Query() query: any,
+    @Body() body: any,
+  ) {
+    return this.gatewayService.proxyRequest('notification', params, query, body, req.method);
   }
 
-  @Get('compliance/*')
+  @All('compliance/*')
   @ApiOperation({ summary: 'Proxy to compliance service' })
-  async proxyToCompliance(@Param() params: any, @Query() query: any) {
-    return this.gatewayService.proxyRequest('compliance', params, query);
+  async proxyToCompliance(
+    @Req() req: Request,
+    @Param() params: any,
+    @Query() query: any,
+    @Body() body: any,
+  ) {
+    return this.gatewayService.proxyRequest('compliance', params, query, body, req.method);
   }
 }
 

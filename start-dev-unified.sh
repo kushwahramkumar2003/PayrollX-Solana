@@ -292,17 +292,17 @@ setup_prisma() {
 start_microservices() {
     print_header "Starting Microservices"
     
-    print_info "Starting all microservices with concurrency=20..."
+    print_info "Starting all microservices (excluding MPC server)..."
     
     cd "$PROJECT_ROOT"
     
-    # Start services and redirect all output to logs
+    # Start services excluding MPC server which is managed separately
     # Note: concurrency is already set in package.json, so don't add it again
-    nohup npm run dev > "$LOG_DIR/microservices.log" 2>&1 &
+    nohup npm run dev -- --filter='!@payrollx/mpc-server' > "$LOG_DIR/microservices.log" 2>&1 &
     echo $! > "$LOG_DIR/microservices.pid"
     
     print_info "Microservices starting in background..."
-    sleep 3
+    sleep 5
     
     # Check if process is still running
     local pid=$(cat "$LOG_DIR/microservices.pid" 2>/dev/null)

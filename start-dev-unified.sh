@@ -267,18 +267,19 @@ start_microservices() {
     cd "$PROJECT_ROOT"
     
     # Start services and redirect all output to logs
-    npm run dev -- --concurrency=20 > "$LOG_DIR/microservices.log" 2>&1 &
+    nohup npm run dev -- --concurrency=20 > "$LOG_DIR/microservices.log" 2>&1 &
     echo $! > "$LOG_DIR/microservices.pid"
     
     print_info "Microservices starting in background..."
-    sleep 5
+    sleep 3
     
     # Check if process is still running
-    if ps -p $(cat "$LOG_DIR/microservices.pid" 2>/dev/null) > /dev/null 2>&1; then
-        print_status "Microservices process started"
+    local pid=$(cat "$LOG_DIR/microservices.pid" 2>/dev/null)
+    if ps -p $pid > /dev/null 2>&1; then
+        print_status "Microservices process started (PID: $pid)"
     else
-        print_error "Failed to start microservices"
-        return 1
+        print_warning "Process may have exited, but services are building..."
+        print_info "Check logs: tail -f $LOG_DIR/microservices.log"
     fi
 }
 

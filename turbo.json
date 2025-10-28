@@ -34,10 +34,6 @@
       "persistent": true,
       "dependsOn": ["^build"]
     },
-    "@payrollx/mpc-server#dev": {
-      "cache": false,
-      "persistent": false
-    },
     "start": {
       "dependsOn": ["build"],
       "cache": false,

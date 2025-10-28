@@ -262,6 +262,12 @@ build_packages() {
 setup_prisma() {
     print_header "Setting up Prisma Databases"
     
+    # Set DATABASE_URL if not already set
+    if [ -z "$DATABASE_URL" ]; then
+        export DATABASE_URL="postgresql://admin:adminpass@localhost:5432/payrollx_main"
+        print_info "Set DATABASE_URL environment variable"
+    fi
+    
     print_info "Generating all Prisma clients..."
     cd "$PROJECT_ROOT/packages/database"
     npm run prisma:generate:all > "$LOG_DIR/prisma-generate.log" 2>&1 || {
@@ -273,9 +279,9 @@ setup_prisma() {
     cd "$PROJECT_ROOT/packages/database"
     for schema_dir in prisma/auth prisma/org prisma/employee prisma/wallet prisma/payroll prisma/transaction prisma/notification prisma/compliance; do
         if [ -f "$schema_dir/schema.prisma" ]; then
-            print_info "Migrating $(basename $(dirname $schema_dir)) database..."
-            npx prisma migrate deploy --schema=$schema_dir/schema.prisma >> "$LOG_DIR/prisma-migrate.log" 2>&1 || {
-                print_warning "Migration for $(basename $(dirname $schema_dir)) had issues"
+            print_info "Syncing $(basename $(dirname $schema_dir)) database..."
+            npx prisma db push --schema=$schema_dir/schema.prisma --skip-generate >> "$LOG_DIR/prisma-migrate.log" 2>&1 || {
+                print_warning "Sync for $(basename $(dirname $schema_dir)) had issues"
             }
         fi
     done

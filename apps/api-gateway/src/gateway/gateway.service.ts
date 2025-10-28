@@ -55,7 +55,9 @@ export class GatewayService {
     try {
       // Extract the path after the service name
       const wildcardPath = params[0] || '';
-      const url = `${serviceUrl}/${wildcardPath}`;
+      // Auth service uses /api/auth/* pattern, so prepend the service name
+      const path = service === 'auth' ? `auth/${wildcardPath}` : wildcardPath;
+      const url = `${serviceUrl}/api/${path}`;
       this.logger.log(`Proxying ${method} request to ${service} service: ${url}`);
 
       let response;

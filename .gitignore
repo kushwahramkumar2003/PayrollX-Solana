@@ -76,6 +76,13 @@ test-ledger/
 config.yml
 test-ledger/
 
+# Unified logs directory
+logs/
+*.pid
+*.log
+solana-validator.log
+mpc-server.log
+
 # IDE and Editor files
 .vscode/
 .idea/

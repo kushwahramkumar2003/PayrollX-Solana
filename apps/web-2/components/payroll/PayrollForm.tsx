@@ -12,6 +12,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import apiClient from "@/lib/api-client";
 import { useAuthStore } from "@/lib/stores/auth-store";
+import { toast } from "sonner";
 import { Calendar, DollarSign, Users } from "lucide-react";
 
 interface PayrollFormProps {
@@ -77,17 +78,23 @@ export default function PayrollForm({ onSuccess }: PayrollFormProps) {
     e.preventDefault();
 
     if (selectedEmployees.length === 0) {
-      alert("Please select at least one employee");
+      toast.error("Validation Error", {
+        description: "Please select at least one employee",
+      });
       return;
     }
 
     if (!amount || parseFloat(amount) <= 0) {
-      alert("Please enter a valid amount");
+      toast.error("Validation Error", {
+        description: "Please enter a valid amount",
+      });
       return;
     }
 
     if (!scheduledDate) {
-      alert("Please select a scheduled date");
+      toast.error("Validation Error", {
+        description: "Please select a scheduled date",
+      });
       return;
     }
 
@@ -97,7 +104,9 @@ export default function PayrollForm({ onSuccess }: PayrollFormProps) {
       // Mock API call for now
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      alert("Payroll run created successfully!");
+      toast.success("Payroll Run Created", {
+        description: "Payroll run created successfully!",
+      });
       onSuccess();
 
       // Reset form
@@ -108,7 +117,9 @@ export default function PayrollForm({ onSuccess }: PayrollFormProps) {
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message || "Failed to create payroll run";
-      alert(errorMessage);
+      toast.error("Payroll Error", {
+        description: errorMessage,
+      });
     } finally {
       setIsSubmitting(false);
     }

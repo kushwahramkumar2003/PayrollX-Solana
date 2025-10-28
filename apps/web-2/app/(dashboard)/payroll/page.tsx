@@ -19,6 +19,7 @@ import {
 import { DataTable } from "@/components/ui/data-table";
 import PayrollForm from "@/components/payroll/PayrollForm";
 import { usePayrollSocket } from "@/lib/hooks/usePayrollSocket";
+import { toast } from "sonner";
 import {
   Clock,
   CheckCircle,
@@ -253,12 +254,16 @@ export default function PayrollPage() {
 
     const handleTransactionConfirmed = (event: CustomEvent) => {
       const { signature } = event.detail;
-      alert(`Transaction confirmed: ${signature}`);
+      toast.success("Transaction Confirmed", {
+        description: `Transaction signature: ${signature}`,
+      });
     };
 
     const handleTransactionFailed = (event: CustomEvent) => {
       const { error } = event.detail;
-      alert(`Transaction failed: ${error}`);
+      toast.error("Transaction Failed", {
+        description: error,
+      });
     };
 
     window.addEventListener(

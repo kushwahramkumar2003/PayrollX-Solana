@@ -27,9 +27,22 @@ async function bootstrap() {
 
   // CORS configuration
   app.enableCors({
-    origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: process.env.CORS_ORIGINS?.split(',') || [
+      'http://localhost:3000',
+      'http://localhost:3100',
+      'http://127.0.0.1:3100',
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+      'Origin',
+    ],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
 
   // Swagger configuration

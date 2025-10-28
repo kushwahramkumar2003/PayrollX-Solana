@@ -4,6 +4,7 @@ import MpcWalletLink from "../wallet/MpcWalletLink";
 import { DarkModeToggle } from "../DarkModeToggle";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/lib/stores/auth-store";
+import { toast } from "sonner";
 import Link from "next/link";
 import { Zap, LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
@@ -14,7 +15,9 @@ export default function Header() {
 
   const handleLogout = () => {
     logout();
-    alert("Logged out successfully");
+    toast.success("Logged out successfully", {
+      description: "You have been logged out.",
+    });
     window.location.href = "/login";
   };
 

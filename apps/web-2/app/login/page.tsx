@@ -17,7 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/api-client";
 import { useAuthStore } from "@/lib/stores/auth-store";
-// import { toast } from "sonner";
+import { toast } from "sonner";
 import { Zap, Eye, EyeOff } from "lucide-react";
 
 const loginSchema = z.object({
@@ -47,7 +47,9 @@ export default function LoginPage() {
       const response = await apiClient.post("/api/auth/login", data);
       const { user, token, role } = response.data;
       login(user, token, role);
-      alert("Login successful!");
+      toast.success("Login successful!", {
+        description: `Welcome back, ${user.name || user.email}!`,
+      });
 
       if (role === "ORG_ADMIN") {
         router.push("/dashboard");
@@ -60,7 +62,9 @@ export default function LoginPage() {
       const errorMessage =
         error.response?.data?.message ||
         "Login failed. Please check your credentials.";
-      alert(errorMessage);
+      toast.error("Login Error", {
+        description: errorMessage,
+      });
     } finally {
       setLoading(false);
     }

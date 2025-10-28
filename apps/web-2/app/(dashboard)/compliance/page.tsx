@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import {
   Download,
   Shield,
@@ -46,8 +47,13 @@ const exportSingleLog = async (logId: string, auditLogs: AuditLog[]) => {
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
+    toast.success("Log Exported", {
+      description: "Audit log has been exported successfully.",
+    });
   } catch (err) {
-    alert("Failed to export log");
+    toast.error("Export Failed", {
+      description: "Failed to export log. Please try again.",
+    });
   }
 };
 
@@ -221,8 +227,13 @@ export default function CompliancePage() {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
+      toast.success("CSV Exported", {
+        description: "All audit logs have been exported successfully.",
+      });
     } catch (err) {
-      alert("Failed to export CSV");
+      toast.error("Export Failed", {
+        description: "Failed to export CSV. Please try again.",
+      });
     }
   };
 

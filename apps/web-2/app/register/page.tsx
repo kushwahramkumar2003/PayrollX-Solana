@@ -17,7 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/api-client";
 import { useAuthStore } from "@/lib/stores/auth-store";
-// import { toast } from "sonner";
+import { toast } from "sonner";
 import { Zap, Eye, EyeOff, User, Mail, Building } from "lucide-react";
 
 const registerSchema = z
@@ -61,13 +61,17 @@ export default function RegisterPage() {
       });
       const { user, token, role } = response.data;
       login(user, token, role);
-      alert("Registration successful!");
+      toast.success("Registration successful!", {
+        description: "Welcome to PayrollX-Solana!",
+      });
       router.push("/dashboard");
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message ||
         "Registration failed. Please try again.";
-      alert(errorMessage);
+      toast.error("Registration Error", {
+        description: errorMessage,
+      });
     } finally {
       setLoading(false);
     }

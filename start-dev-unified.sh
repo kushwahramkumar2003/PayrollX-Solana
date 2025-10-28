@@ -429,6 +429,10 @@ main() {
 start_all() {
     print_header "PayrollX-Solana Development Starter"
     
+    # Kill existing processes on application ports
+    print_info "Clearing application ports..."
+    bash "$PROJECT_ROOT/kill-ports.sh" 2>/dev/null || true
+    
     # Setup
     setup_logs
     check_dependencies

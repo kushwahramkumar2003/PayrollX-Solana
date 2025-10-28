@@ -291,7 +291,8 @@ start_microservices() {
     cd "$PROJECT_ROOT"
     
     # Start services and redirect all output to logs
-    nohup npm run dev -- --concurrency=20 > "$LOG_DIR/microservices.log" 2>&1 &
+    # Note: concurrency is already set in package.json, so don't add it again
+    nohup npm run dev > "$LOG_DIR/microservices.log" 2>&1 &
     echo $! > "$LOG_DIR/microservices.pid"
     
     print_info "Microservices starting in background..."

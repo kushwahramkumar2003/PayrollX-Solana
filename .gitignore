@@ -64,7 +64,6 @@ Cargo.lock
 .anchor/
 test-ledger/
 .DS_Store
-*.log
 .nyc_output
 
 # Anchor framework
@@ -76,10 +75,23 @@ test-ledger/
 config.yml
 test-ledger/
 
-# Unified logs directory
+# Unified logs directory (gitignored)
 logs/
-*.pid
+
+# Service logs
+*-service.log
 *.log
+*.pid
+auth-service.log
+employee-service.log
+wallet-service.log
+transaction-service.log
+notification-service.log
+web.log
+payroll-service.log
+api-gateway.log
+
+# Blockchain logs
 solana-validator.log
 mpc-server.log
 

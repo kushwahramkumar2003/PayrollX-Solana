@@ -280,8 +280,12 @@ setup_prisma() {
     for schema_dir in prisma/auth prisma/org prisma/employee prisma/wallet prisma/payroll prisma/transaction prisma/notification prisma/compliance; do
         if [ -f "$schema_dir/schema.prisma" ]; then
             print_info "Syncing $(basename $(dirname $schema_dir)) database..."
-            npx prisma db push --schema=$schema_dir/schema.prisma --skip-generate >> "$LOG_DIR/prisma-migrate.log" 2>&1 || {
-                print_warning "Sync for $(basename $(dirname $schema_dir)) had issues"
+            # Use --accept-data-loss and --skip-generate to auto-accept warnings
+            echo "y" | npx prisma db push --schema=$schema_dir/schema.prisma --skip-generate --accept-data-loss >> "$LOG_DIR/prisma-migrate.log" 2>&1 || {
+                # If it fails due to interactive prompt, try with yes command
+                yes | npx prisma db push --schema=$schema_dir/schema.prisma --skip-generate --accept-data-loss >> "$LOG_DIR/prisma-migrate.log" 2>&1 || {
+                    print_warning "Sync for $(basename $(dirname $schema_dir)) had issues"
+                }
             }
         fi
     done

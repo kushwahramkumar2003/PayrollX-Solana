@@ -2,24 +2,24 @@
 
 /**
  * API Code Generation Script
- * 
+ *
  * This script:
  * 1. Fetches Swagger/OpenAPI JSON from all running microservices
  * 2. Merges them into a single unified OpenAPI spec
  * 3. Generates TypeScript client code using @hey-api/openapi-ts
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import * as http from 'http';
-import { execSync } from 'child_process';
+import * as fs from "fs";
+import * as path from "path";
+import * as http from "http";
+import { execSync } from "child_process";
 
 // Configuration
-const API_GATEWAY_URL = process.env.API_GATEWAY_URL || 'http://localhost:3000';
-const GATEWAY_SWAGGER_PATH = '/api/docs/unified';
+const API_GATEWAY_URL = process.env.API_GATEWAY_URL || "http://localhost:3000";
+const GATEWAY_SWAGGER_PATH = "/api/docs/unified";
 
-const OUTPUT_DIR = path.join(__dirname, '..', 'lib', 'generated');
-const MERGED_SPEC_PATH = path.join(OUTPUT_DIR, 'openapi-merged.json');
+const OUTPUT_DIR = path.join(__dirname, "..", "lib", "generated");
+const MERGED_SPEC_PATH = path.join(OUTPUT_DIR, "openapi-merged.json");
 
 /**
  * Fetch merged OpenAPI JSON from API Gateway
@@ -27,64 +27,68 @@ const MERGED_SPEC_PATH = path.join(OUTPUT_DIR, 'openapi-merged.json');
 function fetchOpenApiSpec(): Promise<any> {
   return new Promise((resolve) => {
     const url = `${API_GATEWAY_URL}${GATEWAY_SWAGGER_PATH}`;
-    
+
     console.log(`📡 Fetching merged OpenAPI spec from API Gateway at ${url}`);
-    
-    http.get(url, (res) => {
-      if (res.statusCode !== 200) {
-        console.warn(`⚠️  HTTP ${res.statusCode} from API Gateway`);
-        // Return empty spec instead of failing
-        resolve({
-          openapi: '3.0.0',
-          info: {
-            title: 'PayrollX Unified API',
-            version: '1.0',
-            description: 'API temporarily unavailable'
-          },
-          paths: {},
-          components: {}
-        });
-        return;
-      }
-      
-      let data = '';
-      res.on('data', (chunk) => {
-        data += chunk;
-      });
-      
-      res.on('end', () => {
-        try {
-          const spec = JSON.parse(data);
-          console.log(`✅ Successfully fetched merged spec from API Gateway`);
-          resolve(spec);
-        } catch (error: any) {
-          console.warn(`⚠️  Failed to parse JSON from API Gateway: ${error?.message || 'Unknown error'}`);
+
+    http
+      .get(url, (res) => {
+        if (res.statusCode !== 200) {
+          console.warn(`⚠️  HTTP ${res.statusCode} from API Gateway`);
+          // Return empty spec instead of failing
           resolve({
-            openapi: '3.0.0',
+            openapi: "3.0.0",
             info: {
-              title: 'PayrollX Unified API',
-              version: '1.0',
-              description: 'API temporarily unavailable'
+              title: "PayrollX Unified API",
+              version: "1.0",
+              description: "API temporarily unavailable",
             },
             paths: {},
-            components: {}
+            components: {},
           });
+          return;
         }
+
+        let data = "";
+        res.on("data", (chunk) => {
+          data += chunk;
+        });
+
+        res.on("end", () => {
+          try {
+            const spec = JSON.parse(data);
+            console.log(`✅ Successfully fetched merged spec from API Gateway`);
+            resolve(spec);
+          } catch (error: any) {
+            console.warn(
+              `⚠️  Failed to parse JSON from API Gateway: ${error?.message || "Unknown error"}`
+            );
+            resolve({
+              openapi: "3.0.0",
+              info: {
+                title: "PayrollX Unified API",
+                version: "1.0",
+                description: "API temporarily unavailable",
+              },
+              paths: {},
+              components: {},
+            });
+          }
+        });
+      })
+      .on("error", (error) => {
+        console.warn(`⚠️  Failed to fetch from API Gateway: ${error.message}`);
+        // Return empty spec instead of failing
+        resolve({
+          openapi: "3.0.0",
+          info: {
+            title: "PayrollX Unified API",
+            version: "1.0",
+            description: "API temporarily unavailable",
+          },
+          paths: {},
+          components: {},
+        });
       });
-    }).on('error', (error) => {
-      console.warn(`⚠️  Failed to fetch from API Gateway: ${error.message}`);
-      // Return empty spec instead of failing
-      resolve({
-        openapi: '3.0.0',
-        info: {
-          title: 'PayrollX Unified API',
-          version: '1.0',
-          description: 'API temporarily unavailable'
-        },
-        paths: {},
-        components: {}
-      });
-    });
   });
 }
 
@@ -97,20 +101,20 @@ function mergeOpenApiSpecs(specs: any[]): any {
   if (specs.length === 1) {
     return specs[0];
   }
-  
+
   // Fallback merging logic (shouldn't be used)
   const merged: any = {
-    openapi: '3.0.0',
+    openapi: "3.0.0",
     info: {
-      title: 'PayrollX Unified API',
-      version: '1.0',
-      description: 'Combined API for all PayrollX microservices'
+      title: "PayrollX Unified API",
+      version: "1.0",
+      description: "Combined API for all PayrollX microservices",
     },
     servers: [
       {
-        url: 'http://localhost:3000',
-        description: 'API Gateway'
-      }
+        url: "http://localhost:3000",
+        description: "API Gateway",
+      },
     ],
     paths: {},
     components: {
@@ -119,14 +123,14 @@ function mergeOpenApiSpecs(specs: any[]): any {
       responses: {},
       securitySchemes: {
         bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT'
-        }
-      }
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
     },
     security: [{ bearerAuth: [] }],
-    tags: []
+    tags: [],
   };
 
   specs.forEach((spec) => {
@@ -144,12 +148,14 @@ function mergeOpenApiSpecs(specs: any[]): any {
       }
       if (spec.components.parameters) {
         Object.keys(spec.components.parameters).forEach((param) => {
-          merged.components.parameters[param] = spec.components.parameters[param];
+          merged.components.parameters[param] =
+            spec.components.parameters[param];
         });
       }
       if (spec.components.responses) {
         Object.keys(spec.components.responses).forEach((response) => {
-          merged.components.responses[response] = spec.components.responses[response];
+          merged.components.responses[response] =
+            spec.components.responses[response];
         });
       }
     }
@@ -166,18 +172,23 @@ function mergeOpenApiSpecs(specs: any[]): any {
  * Generate TypeScript client code using swagger-typescript-api
  */
 function generateClient(): boolean {
-  console.log('🔨 Generating TypeScript client using swagger-typescript-api...');
-  
+  console.log(
+    "🔨 Generating TypeScript client using swagger-typescript-api..."
+  );
+
   try {
     // Generate single api.ts file with all types and endpoints
     execSync(
       `npx swagger-typescript-api generate -p "${MERGED_SPEC_PATH}" -o "${OUTPUT_DIR}" -n api.ts --axios`,
-      { stdio: 'inherit', cwd: path.join(__dirname, '..') }
+      { stdio: "inherit", cwd: path.join(__dirname, "..") }
     );
-    console.log('✅ TypeScript client generated successfully!');
+    console.log("✅ TypeScript client generated successfully!");
     return true;
   } catch (error) {
-    console.error('❌ Failed to generate TypeScript client:', (error as Error).message);
+    console.error(
+      "❌ Failed to generate TypeScript client:",
+      (error as Error).message
+    );
     return false;
   }
 }
@@ -186,41 +197,54 @@ function generateClient(): boolean {
  * Main execution
  */
 async function main(): Promise<void> {
-  console.log('🚀 Starting API code generation...\n');
-  
+  console.log("🚀 Starting API code generation...\n");
+
   // Create output directory
   if (!fs.existsSync(OUTPUT_DIR)) {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   }
 
   // Fetch merged OpenAPI spec from API Gateway
-  console.log('📥 Fetching merged OpenAPI spec from API Gateway...\n');
+  console.log("📥 Fetching merged OpenAPI spec from API Gateway...\n");
   const spec = await fetchOpenApiSpec();
 
-  // No need to merge - API Gateway already did that
-  const merged = mergeOpenApiSpecs([spec]);
+  // Check if spec is empty (services not running)
+  let merged = mergeOpenApiSpecs([spec]);
+  if (!merged.paths || Object.keys(merged.paths).length === 0) {
+    console.log('⚠️  No paths in fetched spec, using static fallback...');
+    const staticSpecPath = path.join(__dirname, '..', 'scripts', 'openapi-static.json');
+    if (fs.existsSync(staticSpecPath)) {
+      merged = JSON.parse(fs.readFileSync(staticSpecPath, 'utf-8'));
+      console.log('✅ Using static fallback spec');
+    }
+  }
 
   // Save merged spec
   fs.writeFileSync(MERGED_SPEC_PATH, JSON.stringify(merged, null, 2));
   console.log(`✅ Merged spec saved to ${MERGED_SPEC_PATH}`);
 
   // Generate TypeScript client
-  console.log('\n');
+  console.log("\n");
   const success = generateClient();
 
   // Create index.ts to re-export from api.ts
   if (success) {
-    const indexPath = path.join(OUTPUT_DIR, 'index.ts');
-    fs.writeFileSync(indexPath, "// Re-export everything from the generated api.ts\nexport * from './api';\n");
-    console.log('✅ Created index.ts for easier imports');
+    const indexPath = path.join(OUTPUT_DIR, "index.ts");
+    fs.writeFileSync(
+      indexPath,
+      "// Re-export everything from the generated api.ts\nexport * from './api';\n"
+    );
+    console.log("✅ Created index.ts for easier imports");
   }
 
   if (success) {
-    console.log('\n✨ API code generation completed successfully!');
+    console.log("\n✨ API code generation completed successfully!");
     console.log(`📁 Generated files are in: ${OUTPUT_DIR}`);
   } else {
-    console.log('\n⚠️  API code generation completed with warnings');
-    console.log('💡 If services were not running, consider using the fallback script');
+    console.log("\n⚠️  API code generation completed with warnings");
+    console.log(
+      "💡 If services were not running, consider using the fallback script"
+    );
   }
 
   process.exit(success ? 0 : 0);
@@ -228,7 +252,6 @@ async function main(): Promise<void> {
 
 // Run the script
 main().catch((error) => {
-  console.error('💥 Fatal error:', error);
+  console.error("💥 Fatal error:", error);
   process.exit(1);
 });
-

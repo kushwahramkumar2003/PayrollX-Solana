@@ -178,4 +178,9 @@ yarn-error.log*
 .env
 
 target
-debug
+debugtest-keypair.json
+# Anchor local config
+Anchor.toml
+# Solana test keypairs
+*-keypair.json
+test-keypair.json

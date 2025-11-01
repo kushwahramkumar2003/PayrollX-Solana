@@ -9,6 +9,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { execSync } from 'child_process';
 
 const OUTPUT_DIR = path.join(__dirname, '..', 'lib', 'generated');
 const STATIC_SPEC_PATH = path.join(__dirname, '..', 'scripts', 'openapi-static.json');
@@ -151,18 +152,25 @@ async function main(): Promise<void> {
   fs.copyFileSync(STATIC_SPEC_PATH, MERGED_SPEC_PATH);
 
   // Generate TypeScript client
-  console.log('\n🔨 Generating TypeScript client from static spec using @hey-api/openapi-ts...');
+  console.log('\n🔨 Generating TypeScript client from static spec using swagger-typescript-api...');
   
   try {
-    const { execSync } = require('child_process');
-    
     execSync(
-      `npx openapi-ts --client legacy/axios --input "${MERGED_SPEC_PATH}" --output "${OUTPUT_DIR}"`,
-      { stdio: 'inherit', cwd: path.join(__dirname, '..'), shell: true }
+      `npx swagger-typescript-api generate -p "${MERGED_SPEC_PATH}" -o "${OUTPUT_DIR}" -n api.ts --axios`,
+      { stdio: 'inherit', cwd: path.join(__dirname, '..') }
     );
     console.log('✅ TypeScript client generated successfully!');
   } catch (error) {
     console.warn('⚠️  Code generation failed, but continuing...', (error as Error).message);
+  }
+
+  // Create index.ts to re-export from api.ts
+  try {
+    const indexPath = path.join(OUTPUT_DIR, 'index.ts');
+    fs.writeFileSync(indexPath, "// Re-export everything from the generated api.ts\nexport * from './api';\n");
+    console.log('✅ Created index.ts for easier imports');
+  } catch (error) {
+    // Ignore errors here as it's not critical
   }
 
   console.log('\n✨ Fallback API code generation completed!');

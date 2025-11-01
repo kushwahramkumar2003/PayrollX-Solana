@@ -107,23 +107,31 @@ The application automatically generates a TypeScript API client from OpenAPI spe
 1. **Automatic Generation**: Runs on `dev` and `build` via `predev` and `prebuild` hooks
 2. **Single Endpoint**: Fetches merged OpenAPI spec from API Gateway at `/api/docs/unified`
 3. **Type-Safe**: Full TypeScript types for all API requests/responses
-4. **Axios Client**: Uses `@hey-api/openapi-ts` for code generation
+4. **Axios Client**: Uses `swagger-typescript-api` for code generation
+5. **Single File**: All types, interfaces, and API handlers in one `api.ts` file
 
 **Usage in Code:**
 
 ```typescript
-import { postApiAuthLogin, OpenAPI } from '@/lib/generated';
+import { Api } from '@/lib/generated/api';
 
-// Configure base URL if needed
-OpenAPI.BASE = 'http://localhost:3000';
-
-// Call API with full type safety
-const response = await postApiAuthLogin({
-  requestBody: {
-    email: 'user@example.com',
-    password: 'password123'
+// Initialize API client
+const api = new Api({
+  baseURL: 'http://localhost:3000',
+  headers: {
+    Authorization: 'Bearer YOUR_TOKEN_HERE'
   }
 });
+
+// Call API with full type safety
+const response = await api.api.authLoginCreate({
+  email: 'user@example.com',
+  password: 'password123'
+});
+
+// response.data has full type information (AuthResponse)
+console.log(response.data.accessToken);
+console.log(response.data.user);
 ```
 
 **Manual Generation:**

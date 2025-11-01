@@ -12,6 +12,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as http from 'http';
+import { execSync } from 'child_process';
 
 // Configuration
 const API_GATEWAY_URL = process.env.API_GATEWAY_URL || 'http://localhost:3000';
@@ -162,17 +163,16 @@ function mergeOpenApiSpecs(specs: any[]): any {
 }
 
 /**
- * Generate TypeScript client code using @hey-api/openapi-ts
+ * Generate TypeScript client code using swagger-typescript-api
  */
 function generateClient(): boolean {
-  const { execSync } = require('child_process');
-  
-  console.log('🔨 Generating TypeScript client using @hey-api/openapi-ts...');
+  console.log('🔨 Generating TypeScript client using swagger-typescript-api...');
   
   try {
+    // Generate single api.ts file with all types and endpoints
     execSync(
-      `npx openapi-ts --client legacy/axios --input "${MERGED_SPEC_PATH}" --output "${OUTPUT_DIR}"`,
-      { stdio: 'inherit', cwd: path.join(__dirname, '..'), shell: true }
+      `npx swagger-typescript-api generate -p "${MERGED_SPEC_PATH}" -o "${OUTPUT_DIR}" -n api.ts --axios`,
+      { stdio: 'inherit', cwd: path.join(__dirname, '..') }
     );
     console.log('✅ TypeScript client generated successfully!');
     return true;
@@ -207,6 +207,13 @@ async function main(): Promise<void> {
   // Generate TypeScript client
   console.log('\n');
   const success = generateClient();
+
+  // Create index.ts to re-export from api.ts
+  if (success) {
+    const indexPath = path.join(OUTPUT_DIR, 'index.ts');
+    fs.writeFileSync(indexPath, "// Re-export everything from the generated api.ts\nexport * from './api';\n");
+    console.log('✅ Created index.ts for easier imports');
+  }
 
   if (success) {
     console.log('\n✨ API code generation completed successfully!');

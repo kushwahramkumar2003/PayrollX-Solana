@@ -57,6 +57,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@hey-api/openapi-ts": "^0.64.6",
+    "swagger-typescript-api": "^13.1.15",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

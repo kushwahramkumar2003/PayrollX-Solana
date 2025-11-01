@@ -123,15 +123,25 @@ const api = new Api({
   }
 });
 
-// Call API with full type safety
-const response = await api.api.authLoginCreate({
+// Call API with full type safety (organized by service)
+const response = await api.auth.authControllerLogin({
   email: 'user@example.com',
   password: 'password123'
 });
 
-// response.data has full type information (AuthResponse)
-console.log(response.data.accessToken);
-console.log(response.data.user);
+// Response is unwrapped, directly accessible (AuthResponseDto type)
+console.log(response.accessToken);
+console.log(response.user);
+
+// Other services available:
+// api.health.* - Health checks
+// api.organizations.* - Organization management
+// api.employees.* - Employee management  
+// api.wallets.* - Wallet operations
+// api.payroll.* - Payroll operations
+// api.transactions.* - Transaction management
+// api.notifications.* - Notification handling
+// api.compliance.* - Compliance & audit logs
 ```
 
 **Manual Generation:**

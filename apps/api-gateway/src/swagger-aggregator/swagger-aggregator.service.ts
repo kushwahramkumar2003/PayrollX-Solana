@@ -51,7 +51,7 @@ export class SwaggerAggregatorService {
     serviceName: string,
     serviceUrl: string,
   ): Promise<any> {
-    const swaggerUrl = `${serviceUrl}/api/docs/json`;
+    const swaggerUrl = `${serviceUrl}/api/docs-json`;
 
     try {
       this.logger.debug(`Fetching OpenAPI spec from ${serviceName} at ${swaggerUrl}`);

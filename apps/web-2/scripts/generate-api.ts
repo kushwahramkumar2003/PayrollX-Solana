@@ -179,7 +179,7 @@ function generateClient(): boolean {
   try {
     // Generate single api.ts file with all types and endpoints
     execSync(
-      `npx swagger-typescript-api generate -p "${MERGED_SPEC_PATH}" -o "${OUTPUT_DIR}" -n api.ts --axios`,
+      `npx swagger-typescript-api generate -p "${MERGED_SPEC_PATH}" -o "${OUTPUT_DIR}" -n api.ts --axios --extract-request-params --extract-request-body --extract-response-body --responses --clean-output --sort-routes --sort-types --unwrap-response-data`,
       { stdio: "inherit", cwd: path.join(__dirname, "..") }
     );
     console.log("✅ TypeScript client generated successfully!");
@@ -211,11 +211,16 @@ async function main(): Promise<void> {
   // Check if spec is empty (services not running)
   let merged = mergeOpenApiSpecs([spec]);
   if (!merged.paths || Object.keys(merged.paths).length === 0) {
-    console.log('⚠️  No paths in fetched spec, using static fallback...');
-    const staticSpecPath = path.join(__dirname, '..', 'scripts', 'openapi-static.json');
+    console.log("⚠️  No paths in fetched spec, using static fallback...");
+    const staticSpecPath = path.join(
+      __dirname,
+      "..",
+      "scripts",
+      "openapi-static.json"
+    );
     if (fs.existsSync(staticSpecPath)) {
-      merged = JSON.parse(fs.readFileSync(staticSpecPath, 'utf-8'));
-      console.log('✅ Using static fallback spec');
+      merged = JSON.parse(fs.readFileSync(staticSpecPath, "utf-8"));
+      console.log("✅ Using static fallback spec");
     }
   }
 

@@ -156,7 +156,7 @@ async function main(): Promise<void> {
   
   try {
     execSync(
-      `npx swagger-typescript-api generate -p "${MERGED_SPEC_PATH}" -o "${OUTPUT_DIR}" -n api.ts --axios`,
+      `npx swagger-typescript-api generate -p "${MERGED_SPEC_PATH}" -o "${OUTPUT_DIR}" -n api.ts --axios --extract-request-params --extract-request-body --extract-response-body --responses --clean-output --sort-routes --sort-types --unwrap-response-data`,
       { stdio: 'inherit', cwd: path.join(__dirname, '..') }
     );
     console.log('✅ TypeScript client generated successfully!');

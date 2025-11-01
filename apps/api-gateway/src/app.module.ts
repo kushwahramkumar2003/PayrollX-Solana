@@ -7,6 +7,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { HttpModule } from '@nestjs/axios';
 import { HealthModule } from './health/health.module';
 import { GatewayModule } from './gateway/gateway.module';
+import { SwaggerAggregatorModule } from './swagger-aggregator/swagger-aggregator.module';
 import { winstonConfig } from './config/winston.config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -80,6 +81,10 @@ import { AppService } from './app.service';
     // Gateway Module
     // Core functionality: routes requests to microservices
     GatewayModule,
+
+    // Swagger Aggregator Module
+    // Aggregates OpenAPI specs from all microservices
+    SwaggerAggregatorModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -73,19 +73,19 @@ export class GatewayService {
         'http://localhost:3003',
       wallet:
         this.configService.get<string>('WALLET_SERVICE_URL') ||
-        'http://localhost:3005',
+        'http://localhost:3004',
       payroll:
         this.configService.get<string>('PAYROLL_SERVICE_URL') ||
-        'http://localhost:3006',
+        'http://localhost:3005',
       transaction:
         this.configService.get<string>('TRANSACTION_SERVICE_URL') ||
-        'http://localhost:3007',
+        'http://localhost:3006',
       notification:
         this.configService.get<string>('NOTIFICATION_SERVICE_URL') ||
-        'http://localhost:3008',
+        'http://localhost:3007',
       compliance:
         this.configService.get<string>('COMPLIANCE_SERVICE_URL') ||
-        'http://localhost:3009',
+        'http://localhost:3008',
     };
 
     // Log service URL configuration at startup

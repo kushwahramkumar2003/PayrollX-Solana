@@ -242,7 +242,7 @@ export class AuthController {
     description: 'Refresh token to invalidate',
   })
   @ApiResponse({
-    status: 200,
+  status: 200,
     description: 'Logout successful',
     type: LogoutResponseDto,
   })

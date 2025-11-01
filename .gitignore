@@ -184,3 +184,7 @@ Anchor.toml
 # Solana test keypairs
 *-keypair.json
 test-keypair.json
+# Generated API client code
+**/lib/generated/
+apps/web-2/scripts/openapi-static.json
+apps/web-2/openapi-ts.config.json

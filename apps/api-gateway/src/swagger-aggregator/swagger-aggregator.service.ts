@@ -31,14 +31,46 @@ export class SwaggerAggregatorService {
   ) {
     // Initialize service URLs
     this.serviceUrls = new Map([
-      ['auth', this.configService.get<string>('AUTH_SERVICE_URL') || 'http://localhost:3001'],
-      ['org', this.configService.get<string>('ORG_SERVICE_URL') || 'http://localhost:3002'],
-      ['employee', this.configService.get<string>('EMPLOYEE_SERVICE_URL') || 'http://localhost:3003'],
-      ['wallet', this.configService.get<string>('WALLET_SERVICE_URL') || 'http://localhost:3004'],
-      ['payroll', this.configService.get<string>('PAYROLL_SERVICE_URL') || 'http://localhost:3005'],
-      ['transaction', this.configService.get<string>('TRANSACTION_SERVICE_URL') || 'http://localhost:3006'],
-      ['notification', this.configService.get<string>('NOTIFICATION_SERVICE_URL') || 'http://localhost:3007'],
-      ['compliance', this.configService.get<string>('COMPLIANCE_SERVICE_URL') || 'http://localhost:3008'],
+      [
+        'auth',
+        this.configService.get<string>('AUTH_SERVICE_URL') ||
+          'http://localhost:3001',
+      ],
+      [
+        'org',
+        this.configService.get<string>('ORG_SERVICE_URL') ||
+          'http://localhost:3002',
+      ],
+      [
+        'employee',
+        this.configService.get<string>('EMPLOYEE_SERVICE_URL') ||
+          'http://localhost:3003',
+      ],
+      [
+        'wallet',
+        this.configService.get<string>('WALLET_SERVICE_URL') ||
+          'http://localhost:3004',
+      ],
+      [
+        'payroll',
+        this.configService.get<string>('PAYROLL_SERVICE_URL') ||
+          'http://localhost:3005',
+      ],
+      [
+        'transaction',
+        this.configService.get<string>('TRANSACTION_SERVICE_URL') ||
+          'http://localhost:3006',
+      ],
+      [
+        'notification',
+        this.configService.get<string>('NOTIFICATION_SERVICE_URL') ||
+          'http://localhost:3007',
+      ],
+      [
+        'compliance',
+        this.configService.get<string>('COMPLIANCE_SERVICE_URL') ||
+          'http://localhost:3008',
+      ],
     ]);
 
     this.logger.log('Swagger Aggregator service initialized');
@@ -54,8 +86,10 @@ export class SwaggerAggregatorService {
     const swaggerUrl = `${serviceUrl}/api/docs-json`;
 
     try {
-      this.logger.debug(`Fetching OpenAPI spec from ${serviceName} at ${swaggerUrl}`);
-      
+      this.logger.debug(
+        `Fetching OpenAPI spec from ${serviceName} at ${swaggerUrl}`,
+      );
+
       const response = await firstValueFrom(
         this.httpService.get(swaggerUrl, {
           timeout: 5000, // 5 second timeout
@@ -146,12 +180,14 @@ export class SwaggerAggregatorService {
         }
         if (spec.components.parameters) {
           Object.keys(spec.components.parameters).forEach((param) => {
-            merged.components.parameters[param] = spec.components.parameters[param];
+            merged.components.parameters[param] =
+              spec.components.parameters[param];
           });
         }
         if (spec.components.responses) {
           Object.keys(spec.components.responses).forEach((response) => {
-            merged.components.responses[response] = spec.components.responses[response];
+            merged.components.responses[response] =
+              spec.components.responses[response];
           });
         }
       }
@@ -218,4 +254,3 @@ export class SwaggerAggregatorService {
     this.logger.log('OpenAPI spec cache invalidated');
   }
 }
-
